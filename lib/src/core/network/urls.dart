@@ -5,7 +5,8 @@ class AppUrls {
       // 'https://erp.hyderabadwater.gov.in/SWCFeasibilityMobileAppAPI';
       'https://test3.hyderabadwater.gov.in/HMWSSBAPI';
 
-  static const String getVersionUrl = '$baseUrl/GetLatestVersionNoForStoreApp';
+  static const String getVersionUrl = '$baseUrl/GetLatestVersionNoForStoresApp';
+  static const String getLoginOTPExternalUrl = '$baseUrl/SendLoginOTPExternal';
   static const String getOtpUrl = '$baseUrl/GetOTP';
   static const String getOtpForAuthorisedManagerUrl =
       '$baseUrl/GetOTPForAuthorisedManagers';

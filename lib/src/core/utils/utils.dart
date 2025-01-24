@@ -1,5 +1,6 @@
+import 'dart:io';
 
-
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../common_imports.dart';
 
 class Utils {
+  static Map<String, String> deviceInfo = {};
+  static Position? currentPosition;
   static DateTime get currentDateTime => DateTime.now();
   static TimeOfDay get currentTime => TimeOfDay.now();
   static final DateFormat dmyDateFrmt = DateFormat('dd-MM-yyyy');
@@ -54,6 +57,38 @@ class Utils {
 
 
 
+  /// Fetch device information
+  static Future<void> fetchDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    try {
+      if (Platform.isAndroid) {
+        final AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+        deviceInfo = {
+          'device': androidInfo.model ?? 'Unknown',
+          'brand': androidInfo.brand ?? 'Unknown',
+          'manufacturer': androidInfo.manufacturer ?? 'Unknown',
+          'osVersion': 'Android ${androidInfo.version.release}',
+          'sdkInt': '${androidInfo.version.sdkInt}', // SDK version
+          'hardware': androidInfo.hardware ?? 'Unknown',
+          'deviceID': androidInfo.id ?? 'Unknown',
+          'isPhysicalDevice': androidInfo.isPhysicalDevice ? 'Yes' : 'No',
+
+        };
+      } else if (Platform.isIOS) {
+        final IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
+        deviceInfo = {
+          'device': iosInfo.utsname.machine ?? 'Unknown',
+          'systemName': iosInfo.systemName ?? 'iOS',
+          'osVersion': iosInfo.systemVersion ?? 'Unknown',
+          'model': iosInfo.model ?? 'Unknown',
+          'deviceID': iosInfo.identifierForVendor ?? 'Unknown',
+          'isPhysicalDevice': iosInfo.isPhysicalDevice ? 'Yes' : 'No',
+        };
+      }
+    } catch (e) {
+      EasyLoading.showError('Failed to fetch device info: $e');
+    }
+  }
 
 
 
@@ -86,7 +121,6 @@ class Utils {
     }
   }
 
-  static Position? currentPosition;
 
   static Future<void> callLocApi() async {
     // Then, check for location permissions

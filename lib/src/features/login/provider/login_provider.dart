@@ -5,6 +5,12 @@ import '../../../core/network/network_index.dart';
 
 
 class LoginProvider extends ChangeNotifier {
+  double appVersion = 0.0;  // This will store the app version
+
+  void setAppVersion(double version) {
+    appVersion = version;
+    notifyListeners();
+  }
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final TextEditingController mobileNoController = TextEditingController();
   final FocusNode mobileNoFocusNode = FocusNode();
@@ -35,11 +41,21 @@ class LoginProvider extends ChangeNotifier {
     isUserExist = false;
     getApiOtp = Constants.empty;
     mobileNoFocusNode.unfocus();
+    String deviceID = Utils.deviceInfo['deviceID'] ?? '';
+    String deviceName = Utils.deviceInfo['device'] ?? '';
+    String osVersion = Utils.deviceInfo['osVersion'] ?? '';
+    String appName = 'SWC Feasibility App';
+    String appVersionString = appVersion.toString();
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-        apiUrl: AppUrls.getOtpForAuthorisedManagerUrl,
+        apiUrl: AppUrls.getLoginOTPExternalUrl,
         apiFunType: APITypes.put,
         sendingData: <String?, dynamic>{
-          'mobileNumber': mobileNoController.text.trim()
+          'mobileNumber': mobileNoController.text.trim(),
+          "appName": "STORES APP",
+          "deviceID": "RS1.GH122.GGT",
+          "appVersion": "1.0",
+          "deviceName": "Red MI",
+          "osVersion": "Android 13"
         });
 
     if (response.statusCode == 200) {
