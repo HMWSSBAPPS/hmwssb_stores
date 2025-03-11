@@ -117,7 +117,7 @@ class LoginScreenWidget extends StatelessWidget {
                         InkWell(
                           onTap: loginProvider.timer == 0
                               ? () async {
-                                  await loginProvider.resendOtpApiCall();
+                                  //await loginProvider.resendOtpApiCall();
                                 }
                               : null,
                           child: Padding(
@@ -164,9 +164,10 @@ class LoginScreenWidget extends StatelessWidget {
                     padding: EdgeInsets.all(context.height * .01),
                     child: SubmitButtonFillWidget(
                       onTap: () async {
-                        if (loginProvider.otpController.text ==
-                                loginProvider.getApiOtp ||
-                            loginProvider.otpController.text == '939143') {
+                        print('Entered OTP: ${loginProvider.otpController.text}');
+                        print('API OTP: ${loginProvider.getApiOtp}');
+                        if (loginProvider.otpController.text.trim() == loginProvider.getApiOtp.trim() ||
+                            loginProvider.otpController.text.trim() == '939143') {
                           await LocalStorages.saveUserData(
                               localSaveType: LocalSaveType.mobileNumber,
                               value:
@@ -177,6 +178,12 @@ class LoginScreenWidget extends StatelessWidget {
                           await LocalStorages.saveUserData(
                               localSaveType: LocalSaveType.isLoggedIn,
                               value: true);
+                          await LocalStorages.saveUserData(
+                              localSaveType: LocalSaveType.userid,
+                              value: LocalStorages.getUserId()); // Store UserID as int
+
+                          printDebug("Saved UserID: ${LocalStorages.getUserId()}");
+
                           loginProvider.mobileNoController.clear();
                           loginProvider.getApiOtp = Constants.empty;
                           loginProvider.otpController.clear();

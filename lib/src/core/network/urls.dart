@@ -7,11 +7,10 @@ class AppUrls {
 
   static const String getVersionUrl = '$baseUrl/GetLatestVersionNoForStoresApp';
   static const String getLoginOTPExternalUrl = '$baseUrl/SendLoginOTPExternal';
-  static const String getOtpUrl = '$baseUrl/GetOTP';
-  static const String getOtpForAuthorisedManagerUrl =
-      '$baseUrl/GetOTPForAuthorisedManagers';
-  static const String resendOTPForAuthorisedManagersUrl =
-      '$baseUrl/ResendOTPForAuthorisedManagers';
+  static const String getAllSuplierDetailsUrl = '$baseUrl/GetAllSuplierDetails';
+  static const String getPurchaseOrderListBySupplierUrl = '$baseUrl/GetPurchaseOrderListBySupplier';
+  static const String getItemByPurchaseOrderNumberUrl = '$baseUrl/GetItemsByPurchaseOrderNumber';
+  static const String getSaveIMSQCInspectionDetailsUrl = '$baseUrl/SaveIMSQCInspectionDetails';
   // static const String  Url= '$baseUrl/';
   // static const String  Url= '$baseUrl/';
   // static const String  Url= '$baseUrl/';

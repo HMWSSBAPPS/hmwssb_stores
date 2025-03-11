@@ -3,40 +3,37 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../common_imports.dart';
 
-
 enum LocalSaveType {
   isLoggedIn,
   name,
   mobileNumber,
   role,
   otp,
-  // token,
-  // isActive,
+  userid
 }
 
 class LocalStorages {
   static SharedPreferences? _prefs;
 
-  ///INTIALIZE THE SHARED PREFERENCE STATE
+  /// INITIALIZE THE SHARED PREFERENCE STATE
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  ///SAVE THE USER DATA
+  /// SAVE THE USER DATA
   static dynamic saveUserData({
     required LocalSaveType localSaveType,
-    // ignore: avoid_annotating_with_dynamic
     required dynamic value,
   }) {
     dynamic val =
         value ?? (localSaveType == LocalSaveType.isLoggedIn ? false : '');
+
     log("local save $localSaveType and $val");
 
     switch (localSaveType) {
       case LocalSaveType.isLoggedIn:
         _prefs?.setBool(ShareKey.isLoggedIn, val);
         break;
-
       case LocalSaveType.name:
         _prefs?.setString(ShareKey.name, val);
         break;
@@ -46,54 +43,49 @@ class LocalStorages {
       case LocalSaveType.role:
         _prefs?.setString(ShareKey.role, val);
         break;
-
       case LocalSaveType.otp:
         _prefs?.setString(ShareKey.otp, val);
+        break;
+      case LocalSaveType.userid:
+        _prefs?.setInt(ShareKey.userId, val);
         break;
     }
   }
 
-
-  ///GET IS LOGGED IN
-  static dynamic getIsLoggedIn() =>
+  /// GET IS LOGGED IN
+  static bool getIsLoggedIn() =>
       _prefs?.getBool(ShareKey.isLoggedIn) ?? false;
 
-  ///GET NAME
-  static dynamic getName() =>
+  /// GET NAME
+  static String getName() =>
       _prefs?.getString(ShareKey.name) ?? Constants.empty;
 
-  ///GET IS ACTIVE
-  // static dynamic getIsActive() => _prefs?.getBool(ShareKey.isActive) ?? false;
-
-  ///GET MOBILE NUMBER
-  static dynamic getMobileNumber() =>
+  /// GET MOBILE NUMBER
+  static String getMobileNumber() =>
       _prefs?.getString(ShareKey.mobileNumber) ?? Constants.empty;
 
-  ///GET MOBILE
-  // static dynamic getMobile() => _prefs?.getString(ShareKey.MOBILE);
-
-  ///GET ROLE
-  static dynamic getRole() =>
+  /// GET ROLE
+  static String getRole() =>
       _prefs?.getString(ShareKey.role) ?? Constants.empty;
 
-  ///GET OTP
-  static dynamic getOtp() => _prefs?.getString(ShareKey.otp) ?? Constants.empty;
+  /// GET OTP
+  static String getOtp() =>
+      _prefs?.getString(ShareKey.otp) ?? Constants.empty;
 
-  ///GET TOKEN
-  // static dynamic getToken() => _prefs?.getString(ShareKey.token);
+  /// GET USER ID (as int)
+  static int getUserId() =>
+      _prefs?.getInt(ShareKey.userId) ?? 0;
 
-  static Future<dynamic> logOutUser() async {
+  /// LOG OUT USER
+  static Future<void> logOutUser() async {
     _prefs?.setBool(ShareKey.isLoggedIn, false);
     _prefs?.setString(ShareKey.name, Constants.empty);
     _prefs?.setString(ShareKey.mobileNumber, Constants.empty);
     _prefs?.setString(ShareKey.role, Constants.empty);
     _prefs?.setString(ShareKey.otp, Constants.empty);
-    // _prefs?.setString(ShareKey.token, Constants.empty);
-    // _prefs?.setString(ShareKey.isActive, Constants.empty);
+    _prefs?.setInt(ShareKey.userId, 0);
     _prefs?.clear();
   }
-
-  // static dynamic _clearAllStorage() => _prefs?.clear();
 }
 
 class ShareKey {
@@ -101,7 +93,6 @@ class ShareKey {
   static String name = "name";
   static String mobileNumber = "mobile_number";
   static String role = "role";
-  // static String token = "token";
+  static String userId = "userid";
   static String otp = "otp";
-  // static String isActive = "isactive";
 }

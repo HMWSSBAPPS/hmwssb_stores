@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../../../../common_imports.dart';
 import '../../../core/network/network_index.dart';
+import '../../../datamodel/login_model.dart';
 
 
 class LoginProvider extends ChangeNotifier {
@@ -44,25 +45,41 @@ class LoginProvider extends ChangeNotifier {
     String deviceID = Utils.deviceInfo['deviceID'] ?? '';
     String deviceName = Utils.deviceInfo['device'] ?? '';
     String osVersion = Utils.deviceInfo['osVersion'] ?? '';
-    String appName = 'SWC Feasibility App';
+    String appName = 'STORESAPP';
     String appVersionString = appVersion.toString();
+
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
         apiUrl: AppUrls.getLoginOTPExternalUrl,
         apiFunType: APITypes.put,
         sendingData: <String?, dynamic>{
-          'mobileNumber': mobileNoController.text.trim(),
-          "appName": "STORES APP",
-          "deviceID": "RS1.GH122.GGT",
-          "appVersion": "1.0",
-          "deviceName": "Red MI",
-          "osVersion": "Android 13"
+          'mobileNo': mobileNoController.text.trim(),
+          "appName": appName,
+          "deviceID": deviceID,
+          "appVersion": appVersionString,
+          "deviceName": deviceName,
+          "osVersion": osVersion
         });
 
     if (response.statusCode == 200) {
-      getApiOtp = response.body ?? Constants.empty;
+      final responseBody = response.body is Map<String, dynamic>
+          ? response.body
+          : jsonDecode(response.body);
+
+      LoginUserModel loginUserModel = LoginUserModel.fromJson(responseBody);
+
+      // Store OTP and UserName from the response
+      getApiOtp = loginUserModel.mItem2?.oTP ?? Constants.empty;
+      Object userId = loginUserModel.mItem2?.userID ?? '';
+
       if (getApiOtp.isNotEmpty && getApiOtp != '0000') {
         isUserExist = true;
         startTimer();
+
+        // Save userName in shared preferences
+        await LocalStorages.saveUserData(
+            localSaveType: LocalSaveType.userid,
+            value: userId);
+
         EasyLoading.showSuccess(ConstantMessage.otpSentSuccessfully);
       } else {
         EasyLoading.showError(ConstantMessage.invalidCrediantials);
@@ -74,30 +91,31 @@ class LoginProvider extends ChangeNotifier {
     notifyToAllValues();
   }
 
-  Future<void> resendOtpApiCall() async {
-    getApiOtp = Constants.empty;
-    mobileNoFocusNode.unfocus();
-    final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-        apiUrl: AppUrls.resendOTPForAuthorisedManagersUrl,
-        apiFunType: APITypes.put,
-        sendingData: <String?, dynamic>{
-          'mobileNumber': mobileNoController.text.trim()
-        });
-
-    if (response.statusCode == 200) {
-      getApiOtp = response.body ?? Constants.empty;
-      if (getApiOtp.isNotEmpty && getApiOtp != '0000') {
-        startTimer();
-        EasyLoading.showSuccess(ConstantMessage.otpReSentSuccessfully);
-      } else {
-        EasyLoading.showError(ConstantMessage.invalidCrediantials);
-      }
-    } else {
-      EasyLoading.showInfo(ConstantMessage.somethingWentWrongPleaseTryAgain);
-    }
-
-    notifyToAllValues();
-  }
+  //
+  // Future<void> resendOtpApiCall() async {
+  //   getApiOtp = Constants.empty;
+  //   mobileNoFocusNode.unfocus();
+  //   final HTTPResponse<dynamic> response = await ApiCalling.callApi(
+  //       apiUrl: AppUrls.resendOTPForAuthorisedManagersUrl,
+  //       apiFunType: APITypes.put,
+  //       sendingData: <String?, dynamic>{
+  //         'mobileNumber': mobileNoController.text.trim()
+  //       });
+  //
+  //   if (response.statusCode == 200) {
+  //     getApiOtp = response.body ?? Constants.empty;
+  //     if (getApiOtp.isNotEmpty && getApiOtp != '0000') {
+  //       startTimer();
+  //       EasyLoading.showSuccess(ConstantMessage.otpReSentSuccessfully);
+  //     } else {
+  //       EasyLoading.showError(ConstantMessage.invalidCrediantials);
+  //     }
+  //   } else {
+  //     EasyLoading.showInfo(ConstantMessage.somethingWentWrongPleaseTryAgain);
+  //   }
+  //
+  //   notifyToAllValues();
+  // }
 
   // Future<bool> loginApiCall() async {
   //   EasyLoading.show(status: Constants.loading);

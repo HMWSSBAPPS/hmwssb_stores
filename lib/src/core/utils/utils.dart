@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -90,7 +91,35 @@ class Utils {
     }
   }
 
+  static Future<Map<String, dynamic>?> pickFile() async {
+    try {
+      // Open file picker
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
 
+      if (result != null && result.files.isNotEmpty) {
+        PlatformFile file = result.files.first;
+
+        // Convert file to Base64
+        final bytes = File(file.path!).readAsBytesSync();
+        String base64File = base64Encode(bytes);
+
+        return {
+          'fileName': file.name,
+          'filePath': file.path,
+          'base64File': base64File,
+        };
+      } else {
+        // User canceled the picker
+        return null;
+      }
+    } catch (e) {
+      EasyLoading.showError('Failed to pick file: $e');
+      return null;
+    }
+  }
 
 
   static Future<dynamic> openCamera({bool getBase64 = true}) async {

@@ -1,5 +1,6 @@
 import 'package:hmwssb_stores/common_imports.dart';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
+import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +23,8 @@ class MyApp extends StatelessWidget {
         // ignore: always_specify_types
         providers: [
           ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
-          // ChangeNotifierProvider<DashboardProvider>(
-          //     create: (_) => DashboardProvider()),
+          ChangeNotifierProvider<SupplierProvider>(
+              create: (_) => SupplierProvider()),
           // ChangeNotifierProvider<FeasibilityProvider>(
           //     create: (_) => FeasibilityProvider()),
         ],

@@ -3,6 +3,7 @@
 
 import '../../../common_imports.dart';
 import '../../features/login/login_index.dart';
+import '../../features/supplies/ui/supply_dashboard_screen.dart';
 
 class NavigateRoutes {
   /// Define a global key for the navigator
@@ -12,10 +13,10 @@ class NavigateRoutes {
   static dynamic navigateTo() {
     if (LocalStorages.getIsLoggedIn() == true) {
       // if (LocalStorages.getRole() == Constants.tankerOwnerRole) {
-      // return Navigator.pushAndRemoveUntil(
-      //     navigatorKey.currentContext!,
-      //     MaterialPageRoute<Widget>(builder: (_) => const DashboardScreen()),
-      //     (Route<dynamic> route) => false);
+      return Navigator.pushAndRemoveUntil(
+          navigatorKey.currentContext!,
+          MaterialPageRoute<Widget>(builder: (_) => const SupplyDashboardScreen()),
+          (Route<dynamic> route) => false);
       // } else {
       //   return Navigator.pushAndRemoveUntil(
       //       navigatorKey.currentContext!,

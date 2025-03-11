@@ -1,4 +1,3 @@
-
 import '../../../common_imports.dart';
 
 class SubmitButtonFillWidget extends StatelessWidget {
