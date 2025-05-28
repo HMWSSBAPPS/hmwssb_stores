@@ -1,64 +1,146 @@
 import 'dart:io';
 
+import 'package:hmwssb_stores/src/datamodel/userRole_model.dart';
+
 import '../../../../common_imports.dart';
 import '../../../core/network/network_index.dart';
 import '../../../datamodel/login_model.dart';
+import '../../supplies/ui/roles_based_screen/store_manager_screen.dart';
+import '../../supplies/ui/supply_dashboard_screen.dart';
 
 
 class LoginProvider extends ChangeNotifier {
-  double appVersion = 0.0;  // This will store the app version
+  double appVersion = 0.0;
+  bool isLoading = false;
 
-  void setAppVersion(double version) {
-    appVersion = version;
-    notifyListeners();
-  }
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final TextEditingController mobileNoController = TextEditingController();
   final FocusNode mobileNoFocusNode = FocusNode();
-
   final TextEditingController otpController = TextEditingController();
   final FocusNode otpFocusNode = FocusNode();
 
+  final TextEditingController currentPasswordController = TextEditingController();
+  final FocusNode currentPasswordFocusNode = FocusNode();
+  final TextEditingController newPasswordController = TextEditingController();
+  final FocusNode newPasswordFocusNode = FocusNode();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final FocusNode confirmPasswordFocusNode = FocusNode();
+
+  MItem2? loggedInUserData;
   bool isUserExist = false;
   String getApiOtp = Constants.empty;
   int timer = 30;
+
+  UserRoleModel? selectedUserRole;
+  List<UserRoleModel> userRoleList = <UserRoleModel>[];
+
+  // Track disposal
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    mobileNoController.dispose();
+    mobileNoFocusNode.dispose();
+    otpController.dispose();
+    otpFocusNode.dispose();
+
+    currentPasswordController.dispose();
+    currentPasswordFocusNode.dispose();
+    newPasswordController.dispose();
+    newPasswordFocusNode.dispose();
+    confirmPasswordController.dispose();
+    confirmPasswordFocusNode.dispose();
+
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  void safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
+  }
+
+  void notifyToAllValues() => safeNotifyListeners();
+
+  void setAppVersion(double version) {
+    appVersion = version;
+    safeNotifyListeners();
+  }
+
+  void isLoadData(bool loading) {
+    isLoading = loading;
+    // Intentionally not calling notifyListeners immediately
+  }
+
   void startTimer() {
     timer = 30;
     const Duration oneSec = Duration(seconds: 1);
-    Timer.periodic(
-      oneSec,
-      (Timer t) {
-        if (timer < 1) {
-          t.cancel();
-        } else {
-          timer--;
-          notifyToAllValues();
-        }
-      },
-    );
+    Timer.periodic(oneSec, (Timer t) {
+      if (timer < 1) {
+        t.cancel();
+      } else {
+        timer--;
+        safeNotifyListeners();
+      }
+    });
+  }
+
+  void clearChangePassWordValues() {
+    currentPasswordController.clear();
+    newPasswordController.clear();
+    confirmPasswordController.clear();
+  }
+
+  Future<void> verifyOtpAndLogin() async {
+    if (otpController.text.trim().isEmpty) {
+      EasyLoading.showError("Please enter the OTP");
+      return;
+    }
+
+    if (otpController.text.trim() != getApiOtp) {
+      EasyLoading.showError("Invalid OTP");
+      return;
+    }
+
+    if (loggedInUserData != null) {
+      await handleRoleAndNavigate(loggedInUserData!);
+    } else {
+      EasyLoading.showError("User data not found");
+    }
   }
 
   Future<void> getOtpApiCall() async {
     isUserExist = false;
     getApiOtp = Constants.empty;
     mobileNoFocusNode.unfocus();
-    String deviceID = Utils.deviceInfo['deviceID'] ?? '';
-    String deviceName = Utils.deviceInfo['device'] ?? '';
-    String osVersion = Utils.deviceInfo['osVersion'] ?? '';
+    await Utils.fetchDeviceInfo();
+    final Map<String, String> deviceInfo = Utils.deviceInfo;
+
+    // Match keys from your fetchDeviceInfo()
+    String deviceID = deviceInfo["deviceID"] ?? "";
+    String deviceName = deviceInfo["device"] ?? ""; // 'device' contains model name
+    String osVersion = deviceInfo["osVersion"] ?? "";
     String appName = 'STORESAPP';
     String appVersionString = appVersion.toString();
 
+    print("Device Info Sent:\n"
+        "deviceID: $deviceID\n"
+        "deviceName: $deviceName\n"
+        "osVersion: $osVersion");
+
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-        apiUrl: AppUrls.getLoginOTPExternalUrl,
-        apiFunType: APITypes.put,
-        sendingData: <String?, dynamic>{
-          'mobileNo': mobileNoController.text.trim(),
-          "appName": appName,
-          "deviceID": deviceID,
-          "appVersion": appVersionString,
-          "deviceName": deviceName,
-          "osVersion": osVersion
-        });
+      apiUrl: AppUrls.getLoginOTPExternalUrl,
+      apiFunType: APITypes.post,
+      sendingData: <String?, dynamic>{
+        'mobileNo': mobileNoController.text.trim(),
+        'appName': appName,
+        'deviceID': deviceID,
+        'appVersion': appVersionString,
+        'deviceName': deviceName,
+        'osVersion': osVersion,
+      },
+    );
 
     if (response.statusCode == 200) {
       final responseBody = response.body is Map<String, dynamic>
@@ -67,19 +149,20 @@ class LoginProvider extends ChangeNotifier {
 
       LoginUserModel loginUserModel = LoginUserModel.fromJson(responseBody);
 
-      // Store OTP and UserName from the response
       getApiOtp = loginUserModel.mItem2?.oTP ?? Constants.empty;
       Object userId = loginUserModel.mItem2?.userID ?? '';
 
       if (getApiOtp.isNotEmpty && getApiOtp != '0000') {
         isUserExist = true;
         startTimer();
+        loggedInUserData = loginUserModel.mItem2;
 
-        // Save userName in shared preferences
         await LocalStorages.saveUserData(
-            localSaveType: LocalSaveType.userid,
-            value: userId);
+          localSaveType: LocalSaveType.userid,
+          value: userId,
+        );
 
+        await getUserRoleListApiCall();
         EasyLoading.showSuccess(ConstantMessage.otpSentSuccessfully);
       } else {
         EasyLoading.showError(ConstantMessage.invalidCrediantials);
@@ -88,137 +171,107 @@ class LoginProvider extends ChangeNotifier {
       EasyLoading.showInfo(ConstantMessage.somethingWentWrongPleaseTryAgain);
     }
 
-    notifyToAllValues();
+    safeNotifyListeners();
   }
 
-  //
-  // Future<void> resendOtpApiCall() async {
-  //   getApiOtp = Constants.empty;
-  //   mobileNoFocusNode.unfocus();
-  //   final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-  //       apiUrl: AppUrls.resendOTPForAuthorisedManagersUrl,
-  //       apiFunType: APITypes.put,
-  //       sendingData: <String?, dynamic>{
-  //         'mobileNumber': mobileNoController.text.trim()
-  //       });
-  //
-  //   if (response.statusCode == 200) {
-  //     getApiOtp = response.body ?? Constants.empty;
-  //     if (getApiOtp.isNotEmpty && getApiOtp != '0000') {
-  //       startTimer();
-  //       EasyLoading.showSuccess(ConstantMessage.otpReSentSuccessfully);
-  //     } else {
-  //       EasyLoading.showError(ConstantMessage.invalidCrediantials);
-  //     }
-  //   } else {
-  //     EasyLoading.showInfo(ConstantMessage.somethingWentWrongPleaseTryAgain);
-  //   }
-  //
-  //   notifyToAllValues();
-  // }
 
-  // Future<bool> loginApiCall() async {
-  //   EasyLoading.show(status: Constants.loading);
-  //   final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-  //       apiFunType: APITypes.post,
-  //       apiUrl: AppUrls.loginUrl,
-  //       sendingData: <String?, dynamic>{
-  //         'mobile_no': mobileNoController.text.trim(),
-  //         'password': passwordController.text.trim(),
-  //       });
+  Future<void> handleRoleAndNavigate(MItem2 loginUser) async {
+    if (loginUser.rolesInfo == null || loginUser.rolesInfo!.isEmpty) {
+      EasyLoading.showError("User has no roles assigned");
+      return;
+    }
 
-  //   LoginGetModel loginGetModel = LoginGetModel.fromJson(response.body);
-  //   if (response.statusCode==200) {
-  //     if (loginGetModel.error == 0) {
-  //       EasyLoading.showSuccess('Sucessfully Login');
+    final List<String> roleCodesFromLogin = loginUser.rolesInfo!
+        .map((roleInfo) => roleInfo.roleCode ?? '')
+        .where((code) => code.isNotEmpty)
+        .toList();
 
-  //       await LocalStorages.saveUserData(
-  //           localSaveType: LocalSaveType.token, value: loginGetModel.token);
+    if (userRoleList.isEmpty) {
+      await getUserRoleListApiCall();
+    }
 
-  //       await LocalStorages.saveUserData(
-  //           localSaveType: LocalSaveType.isLoggedIn, value: true);
-  //       await LocalStorages.saveUserData(
-  //           localSaveType: LocalSaveType.mobileNumber,
-  //           value: mobileNoController.text.trim());
-  //       // await LocalStorages.saveUserData(
-  //       //     localSaveType: LocalSaveType.password,
-  //       //     value: passwordController.text.trim());
+    final matchedRole = userRoleList.firstWhere(
+          (role) => roleCodesFromLogin.contains(role.roleCode),
+      orElse: () => UserRoleModel(),
+    );
 
-  //       await LocalStorages.saveUserData(
-  //           localSaveType: LocalSaveType.role,
-  //           value: loginGetModel.userData?.role?.toLowerCase());
+    printDebug('Matched role: ${matchedRole.roleCode}');
 
-  //       // await LocalStorages.saveUserData(
-  //       //     localSaveType: LocalSaveType.selectedCanNo,
-  //       //     value: loginGetModel.userData?.canNumbers?.firstOrNull);
+    if (matchedRole.roleCode != null && matchedRole.roleCode!.isNotEmpty) {
+      selectedUserRole = matchedRole;
+      await LocalStorages.saveUserData(
+        localSaveType: LocalSaveType.role,
+        value: matchedRole.roleCode,
+      );
 
-  //       // await LocalStorages.saveUserData(
-  //       //     localSaveType: LocalSaveType.loginUserData,
-  //       //     value: loginGetModel.userData);
+      navigateToRoleScreen(matchedRole.roleCode!);
+      return;
+    }
 
-  //       NavigateRoutes.navigateTo();
-  //       mobileNoController.clear();
-  //       passwordController.clear();
-  //       EasyLoading.dismiss();
-
-  //       notifyToAllValues();
-  //       return true;
-  //     }
-  //     EasyLoading.dismiss();
-  //     EasyLoading.showError(loginGetModel.message ??
-  //         ConstantMessage.somethingWentWrongPleaseTryAgain);
-  //     notifyToAllValues();
-
-  //     return true;
-  //   }
-
-  //   EasyLoading.dismiss();
-  //   EasyLoading.showError(loginGetModel.message ??
-  //       ConstantMessage.somethingWentWrongPleaseTryAgain);
-  //   notifyToAllValues();
-  //   return false;
-  // }
-
-  final TextEditingController currentPasswordController =
-      TextEditingController();
-  final FocusNode currentPasswordFocusNode = FocusNode();
-  final TextEditingController newPasswordController = TextEditingController();
-  final FocusNode newPasswordFocusNode = FocusNode();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
-  final FocusNode confirmPasswordFocusNode = FocusNode();
-
-  void clearChangePassWordValues() {
-    currentPasswordController.clear();
-    newPasswordController.clear();
-    confirmPasswordController.clear();
+    EasyLoading.showInfo('No matching role found');
   }
 
-  // Future<void> changePasswordApiCall() async {
-  //   EasyLoading.show(status: Constants.loading);
-  //   final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-  //     apiFunType: APITypes.post,
-  //     apiUrl: AppUrls.changePasswordUrl,
-  //     sendingData: <String?, dynamic>{
-  //       'new_password': newPasswordController.text.trim()
-  //     },
-  //     token: LocalStorages.getToken() ?? '',
-  //   );
-  //   if (response.isSuccessful && response.body['error'] == 0) {
-  //     LocalStorages.saveUserData(
-  //         localSaveType: LocalSaveType.password,
-  //         value: newPasswordController.text.trim());
-  //   }
+  void navigateToRoleScreen(String roleCode) {
+    printDebug('Navigating to screen for role $roleCode');
+    switch (roleCode) {
+      case 'TP':
+        NavigateRoutes.navigateTo();
+        break;
+      case 'STMGR':
+        NavigateRoutes.toStoreManagerScreen();
+        break;
+      case 'STGM':
+        NavigateRoutes.toStoreGmScreen();
+        break;
+      case 'STDGM':
+        NavigateRoutes.toStoreDGMScreen();
+        break;
+      case 'QCMGR':
+        NavigateRoutes.toQCManagerScreen();
+        break;
+      case 'QCGM':
+        NavigateRoutes.toQCGMScreen();
+        break;
+      case 'QCDGM':
+        NavigateRoutes.toQCDGMScreen();
+        break;
+      case 'ADMIN':
+        NavigateRoutes.toAdminScreen();
+        break;
+      default:
+        EasyLoading.showError("Unknown role code: $roleCode");
+    }
+  }
 
-  //   ((response.isSuccessful && response.body['error'] == 0)
-  //           ? EasyLoading.showSuccess
-  //           : EasyLoading.showError)(
-  //       response.body['message'] ??
-  //           ConstantMessage.somethingWentWrongPleaseTryAgain);
-  //   EasyLoading.dismiss();
-  //   notifyToAllValues();
-  //   return;
-  // }
+  Future<void> getUserRoleListApiCall() async {
+    isLoadData(true);
+    userRoleList.clear();
+    selectedUserRole = null;
+
+    final HTTPResponse<dynamic> response = await ApiCalling.callApi(
+      isLoading: false,
+      apiUrl: AppUrls.getUserRoleDetailsUrl,
+      apiFunType: APITypes.get,
+    );
+
+    if (response.statusCode == 200) {
+      printDebug("response ${response.statusCode} ${response.body}");
+
+      try {
+        final List<dynamic> jsonList = response.body;
+        userRoleList = jsonList
+            .map((e) => UserRoleModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+
+        print('User Roles loaded: $userRoleList');
+      } catch (e) {
+        printDebug("Error parsing user role list: $e");
+      }
+    }
+
+    isLoadData(false);
+    safeNotifyListeners();
+  }
 
   Future<bool> getVersionCheckApiCall(double version) async {
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
@@ -236,27 +289,15 @@ class LoginProvider extends ChangeNotifier {
           Utils.launchInBrowser(Uri.parse(
               "https://play.google.com/store/apps/details?id=com.hmwssb_swc"));
         }
-        if (Platform.isIOS) {
-          // Utils.launchInBrowser(Uri.parse(
-          //     "https://apps.apple.com/in/app/com."));
-        }
 
-        notifyToAllValues();
+        // Handle iOS link if needed
+
+        safeNotifyListeners();
         return false;
       }
     }
-    notifyToAllValues();
+    safeNotifyListeners();
     return true;
   }
-
-  void notifyToAllValues() => notifyListeners();
-
-  @override
-  void dispose() {
-    mobileNoController.dispose();
-    mobileNoFocusNode.dispose();
-    otpController.dispose();
-    otpFocusNode.dispose();
-    super.dispose();
-  }
 }
+

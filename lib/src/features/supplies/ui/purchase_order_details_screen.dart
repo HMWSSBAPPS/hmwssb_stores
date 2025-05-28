@@ -166,7 +166,7 @@ class PurchaseOrderDetailsScreen extends StatelessWidget {
                     8.ph,
                     _customLabelBodyText(
                       context: context,
-                      label: 'Quantity',
+                      label: 'Proposed Quantity',
                       body: data.quantity.toString(),
                     ),
                     // 8.ph,

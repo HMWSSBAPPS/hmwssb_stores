@@ -6,6 +6,7 @@ class Constants {
       'Hyderabad Metropolitan Water Supply & Sewerage Board';
   static const String welcome = 'Welcome';
   static const String a = '';
+  static const String fallbackOtp = '939143';
   static const String empty = '';
   static const String hypenSymbol = '-';
   static const String login = 'Login';
@@ -45,7 +46,7 @@ class Constants {
   static const String meters = 'Meters';
   static const String height = 'Height';
   static const String valid = 'Valid';
-  // static const String  = '';
+// static const String  = '';
 }
 
 class ConstantMessage {

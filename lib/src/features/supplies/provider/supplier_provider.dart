@@ -1,4 +1,5 @@
 import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
 
 import '../../../core/network/network_index.dart';
 import '../../../datamodel/all_supply_details.dart';
@@ -21,35 +22,46 @@ class SupplierProvider extends ChangeNotifier {
 
   AllSupplierDetailsListModel? selectedSupplierDetails;
   List<AllSupplierDetailsListModel> supplierDetailsList =
-      <AllSupplierDetailsListModel>[];
-  Future<void> getSupplierDetailsListApiCall() async {
+  <AllSupplierDetailsListModel>[];
+  Future<void> getSupplierDetailsListApiCall(LoginProvider loginProvider) async {
     isLoadData(true);
     supplierDetailsList.clear();
     selectedSupplierDetails = null;
+
+    final int? userId = loginProvider.loggedInUserData?.userID;
+    final String? wingType = loginProvider.loggedInUserData?.wingType;
+
+    if (userId == null || wingType == null) {
+      EasyLoading.showError("User ID or Wing is missing.");
+      isLoadData(false);
+      notifyToAllValues();
+      return;
+    }
+
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
       isLoading: false,
       apiUrl: AppUrls.getAllSuplierDetailsUrl,
-      apiFunType: APITypes.get,
+      apiFunType: APITypes.post,
+      sendingData: <String, dynamic>{
+        "UserID": userId,
+        "Wing": wingType,
+      },
     );
+
     if (response.statusCode == 200) {
-      printDebug("response ${response.statusCode} ${response.body}");
-      // supplierDetailsList = (response.body as List<dynamic>)
-      //     .map((e) => AllSupplierDetailsModel.fromJson(e))
-      //     .toList();
       AllSupplierDetailsModel data =
-          AllSupplierDetailsModel.fromJson(response.body);
+      AllSupplierDetailsModel.fromJson(response.body);
       if (data.mItem1?.responseCode == '200') {
-        if (data.mItem2?.isNotEmpty ?? false) {
-          supplierDetailsList = data.mItem2 ?? [];
-        }
+        supplierDetailsList = data.mItem2 ?? [];
       }
-      // print('Supplier Details loaded: ${supplierDetailsList.map((e) => e.mItem2?.firstOrNull?.agencyName).toList()}');
-      // selectedCategoryCode = categoryCodeList.first;
-      print('Supplier Details loaded: $supplierDetailsList');
+    } else {
+      EasyLoading.showError("Failed to fetch supplier details");
     }
+
     isLoadData(false);
     notifyToAllValues();
   }
+
 
 //********************************GET PURCHASE ORDER LIST BY SUPPLIES API CALL**********************************//
   PurchaseOrderListMode? selectedPurchaseOrderListBySupplies;
@@ -62,7 +74,7 @@ class SupplierProvider extends ChangeNotifier {
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
       isLoading: false,
       apiUrl: AppUrls.getPurchaseOrderListBySupplierUrl,
-      apiFunType: APITypes.put,
+      apiFunType: APITypes.post,
       sendingData: <String?, dynamic>{
         "SupplierID": selectedSupplierDetails?.supplierId,
       },
@@ -72,7 +84,7 @@ class SupplierProvider extends ChangeNotifier {
       printDebug("response ${response.statusCode} ${response.body}");
 
       PurchaseOrderListBySuppliesModel data =
-          PurchaseOrderListBySuppliesModel.fromJson(response.body);
+      PurchaseOrderListBySuppliesModel.fromJson(response.body);
 
       if (data.mItem1?.responseCode == '200') {
         if (data.mItem2?.isNotEmpty ?? false) {
@@ -87,25 +99,26 @@ class SupplierProvider extends ChangeNotifier {
   //********************************GET ITEMS BY PURCHASE ORDER NUMBER API CALL**********************************//
   ItemsByPurchaseOrderModel? selectedItemByPurchaseOrder;
   List<ItemsByPurchaseOrderModel> itemByPurchaseOrderList =
-      <ItemsByPurchaseOrderModel>[];
-  Future<void> getItemsByPurchaseOrderNumberApiCall() async {
+  <ItemsByPurchaseOrderModel>[];
+  Future<void> getItemsByPurchaseOrderNumberApiCall(LoginProvider loginProvider) async {
     isLoadData(true);
     itemByPurchaseOrderList.clear();
     selectedItemByPurchaseOrder = null;
-
+    final String? wingType = loginProvider.loggedInUserData?.wingType;
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
       isLoading: false,
       apiUrl: AppUrls.getItemByPurchaseOrderNumberUrl,
-      apiFunType: APITypes.put,
+      apiFunType: APITypes.post,
       sendingData: <String?, dynamic>{
         "POID": selectedPurchaseOrderListBySupplies?.pkey,
+        "Wing": wingType
       },
     );
     if (response.statusCode == 200) {
       printDebug("response ${response.statusCode} ${response.body}");
 
       ItemsByPurchaseOrderNumberModel data =
-          ItemsByPurchaseOrderNumberModel.fromJson(response.body);
+      ItemsByPurchaseOrderNumberModel.fromJson(response.body);
 
       if (data.mItem1?.responseCode == '200') {
         if (data.mItem2?.isNotEmpty ?? false) {
@@ -123,8 +136,8 @@ class SupplierProvider extends ChangeNotifier {
   Future<void> postIMSQInspectDetailsApiCall(
       SaveIMSQCInspectionDetailsModel postList, SupplierProvider supplierProvider) async {
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
-      apiUrl: AppUrls.getSaveIMSQCInspectionDetailsUrl,
-      apiFunType: APITypes.put,
+      apiUrl: AppUrls.getSaveIMSTPInspectionDetailsUrl,
+      apiFunType: APITypes.post,
       sendingData: postList.toJson(),
     );
 

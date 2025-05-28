@@ -1,7 +1,8 @@
 class SaveIMSQCInspectionDetailsModel {
   int? purchaseOrderID;
   int? purchaseOrderLineItemID;
-  int? quantity;
+  double? quantity;
+  double? qCApprovedQuantity;
   String? unitType;
   String? gmReadiness;
   String? itemMake;
@@ -17,12 +18,14 @@ class SaveIMSQCInspectionDetailsModel {
   String? qCStatus;
   String? uploadDocName;
   String? uploadDocBase64;
+  String? inspectionLevel;
   List<QCInspectionImages>? qCInspectionImages;
 
   SaveIMSQCInspectionDetailsModel(
       {this.purchaseOrderID,
         this.purchaseOrderLineItemID,
         this.quantity,
+        this.qCApprovedQuantity,
         this.unitType,
         this.gmReadiness,
         this.itemMake,
@@ -38,12 +41,14 @@ class SaveIMSQCInspectionDetailsModel {
         this.qCStatus,
         this.uploadDocName,
         this.uploadDocBase64,
+        this.inspectionLevel,
         this.qCInspectionImages});
 
   SaveIMSQCInspectionDetailsModel.fromJson(Map<String, dynamic> json) {
     purchaseOrderID = json['PurchaseOrderID'];
     purchaseOrderLineItemID = json['PurchaseOrderLineItemID'];
     quantity = json['Quantity'];
+    qCApprovedQuantity = json['QCApprovedQuantity'];
     unitType = json['UnitType'];
     gmReadiness = json['GmReadiness'];
     itemMake = json['ItemMake'];
@@ -59,6 +64,7 @@ class SaveIMSQCInspectionDetailsModel {
     qCStatus = json['QCStatus'];
     uploadDocName = json['UploadDocName'];
     uploadDocBase64 = json['UploadDocBase64'];
+    inspectionLevel = json['InspectionLevel'];
     if (json['QCInspectionImages'] != null) {
       qCInspectionImages = <QCInspectionImages>[];
       json['QCInspectionImages'].forEach((v) {
@@ -72,6 +78,7 @@ class SaveIMSQCInspectionDetailsModel {
     data['PurchaseOrderID'] = this.purchaseOrderID;
     data['PurchaseOrderLineItemID'] = this.purchaseOrderLineItemID;
     data['Quantity'] = this.quantity;
+    data['QCApprovedQuantity'] = this.qCApprovedQuantity;
     data['UnitType'] = this.unitType;
     data['GmReadiness'] = this.gmReadiness;
     data['ItemMake'] = this.itemMake;
@@ -87,6 +94,7 @@ class SaveIMSQCInspectionDetailsModel {
     data['QCStatus'] = this.qCStatus;
     data['UploadDocName'] = this.uploadDocName;
     data['UploadDocBase64'] = this.uploadDocBase64;
+    data['InspectionLevel'] = this.inspectionLevel;
     if (this.qCInspectionImages != null) {
       data['QCInspectionImages'] =
           this.qCInspectionImages!.map((v) => v.toJson()).toList();

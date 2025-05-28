@@ -1,3 +1,4 @@
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:hmwssb_stores/src/features/supplies/ui/purchase_order_details_screen.dart';
 import '../../../../common_imports.dart';
@@ -9,8 +10,9 @@ class SupplyDashboardScreen extends StatefulWidget {
   State<SupplyDashboardScreen> createState() => _SupplyDashboardScreenState();
 }
 
-class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
+class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
   late SupplierProvider supplierProvider;
+  late LoginProvider  loginProvider;
   String? selectedSupplier;
   String? selectedPurchaseOrder;
   bool isSubmitting = false; // Added loader flag
@@ -18,9 +20,27 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    supplierProvider = Provider.of<SupplierProvider>(context, listen: false);
-    supplierProvider.getSupplierDetailsListApiCall();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      supplierProvider = Provider.of<SupplierProvider>(context, listen: false);
+      loginProvider = Provider.of<LoginProvider>(context, listen: false);
+
+      if (loginProvider.loggedInUserData?.userID != null &&
+          loginProvider.loggedInUserData?.wingType != null) {
+        supplierProvider.getSupplierDetailsListApiCall(loginProvider);
+      } else {
+        // Optional: Delay the API call and check again later
+        Future.delayed(const Duration(milliseconds: 500), () {
+          final loginData = loginProvider.loggedInUserData;
+          if (loginData?.userID != null && loginData?.wingType != null) {
+            supplierProvider.getSupplierDetailsListApiCall(loginProvider);
+          } else {
+            EasyLoading.showError("User info not ready. Please re-login.");
+          }
+        });
+      }
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +169,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
                           isSubmitting = true;
                         });
 
-                        await provider.getItemsByPurchaseOrderNumberApiCall();
+                        await provider.getItemsByPurchaseOrderNumberApiCall(loginProvider);
 
                         setState(() {
                           isSubmitting = false;

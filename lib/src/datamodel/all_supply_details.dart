@@ -52,55 +52,31 @@ class MItem1 {
 class AllSupplierDetailsListModel {
   int? supplierId;
   String? agencyName;
-  String? address;
-  String? mobileNo;
   String? agreementValidity;
-  String? workOrderNo;
   String? workOrderDate;
   String? agreementDate;
-  String? regNo;
-  String? gst;
-  String? contactPerson;
-  String? email;
   int? isActiveStatus;
   String? createdDate;
-  String? createdBy;
   String? modifiedDate;
 
   AllSupplierDetailsListModel(
       {this.supplierId,
         this.agencyName,
-        this.address,
-        this.mobileNo,
         this.agreementValidity,
-        this.workOrderNo,
         this.workOrderDate,
         this.agreementDate,
-        this.regNo,
-        this.gst,
-        this.contactPerson,
-        this.email,
         this.isActiveStatus,
         this.createdDate,
-        this.createdBy,
         this.modifiedDate});
 
   AllSupplierDetailsListModel.fromJson(Map<String, dynamic> json) {
     supplierId = json['SupplierId'];
     agencyName = json['AgencyName'];
-    address = json['Address'];
-    mobileNo = json['MobileNo'];
     agreementValidity = json['AgreementValidity'];
-    workOrderNo = json['WorkOrderNo'];
     workOrderDate = json['WorkOrderDate'];
     agreementDate = json['AgreementDate'];
-    regNo = json['RegNo'];
-    gst = json['Gst'];
-    contactPerson = json['ContactPerson'];
-    email = json['Email'];
     isActiveStatus = json['IsActiveStatus'];
     createdDate = json['CreatedDate'];
-    createdBy = json['CreatedBy'];
     modifiedDate = json['ModifiedDate'];
   }
 
@@ -108,19 +84,11 @@ class AllSupplierDetailsListModel {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['SupplierId'] = this.supplierId;
     data['AgencyName'] = this.agencyName;
-    data['Address'] = this.address;
-    data['MobileNo'] = this.mobileNo;
     data['AgreementValidity'] = this.agreementValidity;
-    data['WorkOrderNo'] = this.workOrderNo;
     data['WorkOrderDate'] = this.workOrderDate;
     data['AgreementDate'] = this.agreementDate;
-    data['RegNo'] = this.regNo;
-    data['Gst'] = this.gst;
-    data['ContactPerson'] = this.contactPerson;
-    data['Email'] = this.email;
     data['IsActiveStatus'] = this.isActiveStatus;
     data['CreatedDate'] = this.createdDate;
-    data['CreatedBy'] = this.createdBy;
     data['ModifiedDate'] = this.modifiedDate;
     return data;
   }

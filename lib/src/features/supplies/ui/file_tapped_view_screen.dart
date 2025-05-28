@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import '../../../../common_imports.dart';
 import '../../../datamodel/items_by_purchase_order_number.dart';
@@ -18,10 +20,14 @@ class FileViewTappedScreen extends StatefulWidget {
 
 class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
   late SupplierProvider supplierProvider;
+  late LoginProvider loginProvider;
   TextEditingController itemMakeController = TextEditingController();
   TextEditingController batchNoController = TextEditingController();
   TextEditingController inspectionRemarksController = TextEditingController();
   TextEditingController slaForQcController = TextEditingController();
+  TextEditingController proposedQuantityController = TextEditingController();
+  TextEditingController quantityToInspectController = TextEditingController();
+  TextEditingController approvedQuantityController = TextEditingController();
   TextEditingController hsnNoFieldController = TextEditingController();
   String? selectedYearOfManufacturerDisplay;
   String? selectedYearOfManufacturerAPI;
@@ -35,12 +41,36 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
   List<XFile> selectedImages = [];
   int? _currentImageIndex; // To track the selected image for full-screen view
   Future<void> _pickFile() async {
-    final fileData = await Utils.pickFile();
-    if (fileData != null) {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      final file = File(result.files.single.path!);
+      final fileSizeInBytes = await file.length();
+
+      if (fileSizeInBytes > 1024 * 1024) {
+        // 1MB = 1024 * 1024 bytes
+        EasyLoading.showError('File size must be under 1MB.');
+        return;
+      }
+
+      final fileExtension = result.files.single.extension?.toLowerCase();
+      const allowedExtensions = ['pdf', 'doc', 'docx'];
+
+      if (!allowedExtensions.contains(fileExtension)) {
+        EasyLoading.showError('Only PDF, DOC, and DOCX files are allowed.');
+        return;
+      }
+
+      final fileBytes = await file.readAsBytes();
       setState(() {
-        uploadedFileName = fileData['fileName'];
-        uploadedFileBase64 = fileData['base64File'];
+        uploadedFileName = result.files.single.name;
+        uploadedFileBase64 = base64Encode(fileBytes);
       });
+
+      EasyLoading.showSuccess('File uploaded successfully!');
     }
   }
 
@@ -50,15 +80,26 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       uploadedFileBase64 = null;
     });
   }
+
   @override
   void initState() {
     super.initState();
     supplierProvider = Provider.of(context, listen: false);
-    //_submitForm();
+    loginProvider = Provider.of(context, listen: false);
     Utils.callLocApi();
-    slaForQcController.text = supplierProvider.itemByPurchaseOrderList.firstOrNull?.slaDate != null
-        ? DateFormat('dd-MM-yyyy').format(DateTime.parse(supplierProvider.itemByPurchaseOrderList.firstOrNull!.slaDate!))
-        : '';
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final selectedItem = widget.data; // ✅ Use passed-in data directly
+
+      slaForQcController.text = selectedItem.slaDate != null
+          ? DateFormat('dd-MM-yyyy')
+              .format(DateTime.parse(selectedItem.slaDate!))
+          : '';
+
+      proposedQuantityController.text = selectedItem.quantity?.toString() ?? '';
+      quantityToInspectController.text =
+          selectedItem.quantitytoInspect?.toString() ?? '';
+    });
   }
 
   Future<void> _submitForm() async {
@@ -70,7 +111,8 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
     //   EasyLoading.showError('Manufacture Date is mandatory');
     //   return;
     // }
-    if (selectedDateOfQCInspectionAPI != null && selectedDateOfQCInspectionAPI!.isNotEmpty) {
+    if (selectedDateOfQCInspectionAPI != null &&
+        selectedDateOfQCInspectionAPI!.isNotEmpty) {
       inspectionDate = DateTime.tryParse(selectedDateOfQCInspectionAPI!);
       if (inspectionDate == null) {
         EasyLoading.showError('Invalid QC Inspection Date.');
@@ -78,7 +120,8 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       }
     }
 
-    if (selectedYearOfManufacturerAPI != null && selectedYearOfManufacturerAPI!.isNotEmpty) {
+    if (selectedYearOfManufacturerAPI != null &&
+        selectedYearOfManufacturerAPI!.isNotEmpty) {
       manufactureDate = DateTime.tryParse(selectedYearOfManufacturerAPI!);
       if (manufactureDate == null) {
         EasyLoading.showError('Invalid Manufacturing Date.');
@@ -87,12 +130,12 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
       if (inspectionDate != null) {
         if (inspectionDate.isBefore(manufactureDate)) {
-          EasyLoading.showError('QC Inspection Date should be greater than or equal to the Manufacturing Date.');
+          EasyLoading.showError(
+              'QC Inspection Date should be greater than or equal to the Manufacturing Date.');
           return;
         }
       }
     }
-
 
     if (selectedApprovalStatus == "Rejected" &&
         inspectionRemarksController.text.trim().isEmpty) {
@@ -110,35 +153,65 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         base64Image: base64Encode(File(image.path).readAsBytesSync()),
       );
     }).toList();
+    final String approvedQtyText = approvedQuantityController.text.trim();
+    final double? approvedQuantity = double.tryParse(approvedQtyText);
+    final double? quantity =
+        widget.data.quantity?.toDouble(); // ✅ Instead of provider
+
+    if (selectedApprovalStatus == "Rejected") {
+      // Treat both empty or non-zero values as invalid
+      if (approvedQuantity == null || approvedQuantity != 0) {
+        EasyLoading.showError(
+            'Approved Quantity must be 0 because QC Status is Rejected.');
+        return;
+      }
+    } else {
+      if (approvedQtyText.isEmpty) {
+        EasyLoading.showError('Approved Quantity is required.');
+        return;
+      }
+      if (approvedQuantity == null) {
+        EasyLoading.showError('Approved Quantity must be a valid number.');
+        return;
+      }
+      if (quantity != null && approvedQuantity > quantity) {
+        EasyLoading.showError(
+            'Approved Quantity cannot be greater than the Proposed Quantity.');
+        return;
+      }
+    }
 
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
-      purchaseOrderID: supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
-      purchaseOrderLineItemID: supplierProvider.itemByPurchaseOrderList.firstOrNull?.lineItemPKey,
-      quantity: supplierProvider.itemByPurchaseOrderList.firstOrNull?.quantity,
-      unitType: supplierProvider.itemByPurchaseOrderList.firstOrNull?.units,
-      gmReadiness: supplierProvider.itemByPurchaseOrderList.firstOrNull?.readyNessStatus,
+      purchaseOrderID:
+          supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
+      purchaseOrderLineItemID: widget.data.lineItemPKey,
+      quantity: quantity,
+      qCApprovedQuantity: approvedQuantity,
+      unitType: widget.data.units,
+      gmReadiness: widget.data.readyNessStatus,
       itemMake: itemMakeController.text,
-      quantityToInspect: supplierProvider.itemByPurchaseOrderList.firstOrNull!.quantitytoInspect.toString(),
+      quantityToInspect: widget.data.quantitytoInspect.toString(),
       batchNo: batchNoController.text,
       manufactureDate: selectedYearOfManufacturerAPI ?? '',
       inspectionDate: selectedDateOfQCInspectionAPI ?? '',
       inspectionRemarks: inspectionRemarksController.text,
       hSMNo: hsnNoFieldController.text,
-      refPkey: supplierProvider.itemByPurchaseOrderList.firstOrNull?.refPkey,
+      refPkey: widget.data.refPkey,
       qCDoneBy: LocalStorages.getUserId(),
       qCStatus: selectedApprovalStatus ?? '',
-      sLAQCChecks: supplierProvider.itemByPurchaseOrderList.firstOrNull?.slaDate,
-      uploadDocName: uploadedFileName?.substring(0, 20) ?? '',
+      sLAQCChecks: widget.data.slaDate,
+      inspectionLevel: loginProvider.loggedInUserData?.wingType,
+      uploadDocName: uploadedFileName ?? '',
       uploadDocBase64: uploadedFileBase64 ?? '',
       qCInspectionImages: imagesList,
     );
+    printDebug(
+        'Encoded base64 starts with: ${uploadedFileBase64?.substring(0, 30)}');
 
     printDebug("Submitted Data: ${postData.toJson()}");
-    await supplierProvider.postIMSQInspectDetailsApiCall(postData, supplierProvider);
+    await supplierProvider.postIMSQInspectDetailsApiCall(
+        postData, supplierProvider);
   }
-
-
-
 
   // Image picker, calendar selection, etc., remain the same
   Future<void> _captureImage() async {
@@ -174,7 +247,8 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
           data: Theme.of(context).copyWith(
             primaryColor: Colors.blueGrey,
             colorScheme: ColorScheme.light(primary: Colors.blueGrey),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            buttonTheme:
+                const ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
         );
@@ -183,8 +257,10 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
     if (picked != null) {
       setState(() {
-        selectedYearOfManufacturerDisplay = DateFormat("dd-MM-yyyy").format(picked); // UI format
-        selectedYearOfManufacturerAPI = DateFormat("yyyy-MM-dd'T'00:00:00").format(picked); // API format
+        selectedYearOfManufacturerDisplay =
+            DateFormat("dd-MM-yyyy").format(picked); // UI format
+        selectedYearOfManufacturerAPI =
+            DateFormat("yyyy-MM-dd'T'00:00:00").format(picked); // API format
       });
       printDebug("Manufacture Date Selected: $selectedYearOfManufacturerAPI");
     }
@@ -195,16 +271,17 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: currentDate,  // Default to today
-      firstDate: DateTime(2000), // Allows past dates without restriction
-      lastDate: DateTime(2100),  // Allows future dates
+      initialDate: currentDate, // Default to today
+      firstDate: DateTime(2000), // Allows past dates
+      lastDate: currentDate, // Restrict to today or earlier
       locale: const Locale('en', 'US'),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             primaryColor: Colors.blueGrey,
             colorScheme: ColorScheme.light(primary: Colors.blueGrey),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            buttonTheme:
+                const ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
         );
@@ -213,20 +290,24 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
     if (picked != null) {
       setState(() {
-        selectedDateOfQCInspectionDisplay = DateFormat("dd-MM-yyyy").format(picked);
-        selectedDateOfQCInspectionAPI = DateFormat("yyyy-MM-dd'T'00:00:00").format(picked);
+        selectedDateOfQCInspectionDisplay =
+            DateFormat("dd-MM-yyyy").format(picked);
+        selectedDateOfQCInspectionAPI =
+            DateFormat("yyyy-MM-dd'T'00:00:00").format(picked);
       });
 
-      // Validate QC Inspection Date against Manufacturing Date if available
+      // Optional check if manufacturing date is after inspection date
       if (selectedYearOfManufacturerAPI != null) {
-        DateTime manufactureDate = DateTime.parse(selectedYearOfManufacturerAPI!);
-
+        DateTime manufactureDate =
+            DateTime.parse(selectedYearOfManufacturerAPI!);
         if (picked.isBefore(manufactureDate)) {
-          EasyLoading.showError('QC Inspection Date should be greater than or equal to the Manufacturing Date.');
+          EasyLoading.showError(
+              'QC Inspection Date should be greater than or equal to the Manufacturing Date.');
         }
       }
     }
   }
+
   // Show full-screen zoomable image
   void _openFullScreenImage(int index) {
     setState(() {
@@ -288,6 +369,24 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                 CustomTextFormField(
                     controller: batchNoController, focusNode: FocusNode()),
                 const SizedBox(height: 20),
+                CustomText(
+                    writtenText: "Proposed Quantity",
+                    textStyle: ThemeTextStyle.style()),
+                const SizedBox(height: 10),
+                CustomTextFormField(
+                    isReadOnly: true,
+                    controller: proposedQuantityController,
+                    focusNode: FocusNode()),
+                const SizedBox(height: 10),
+                CustomText(
+                    writtenText: "Quantity To Inspect",
+                    textStyle: ThemeTextStyle.style()),
+                const SizedBox(height: 10),
+                CustomTextFormField(
+                    isReadOnly: true,
+                    controller: quantityToInspectController,
+                    focusNode: FocusNode()),
+                const SizedBox(height: 10),
                 CustomText(
                     writtenText: "Date of Manufacture*",
                     textStyle: ThemeTextStyle.style()),
@@ -373,7 +472,8 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                     textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
                 CustomTextFormField(
-                    controller: inspectionRemarksController, focusNode: FocusNode()),
+                    controller: inspectionRemarksController,
+                    focusNode: FocusNode()),
                 const SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,58 +485,76 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                     const SizedBox(height: 10),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 15),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: uploadedFileName == null
                           ? InkWell(
-                        onTap: _pickFile,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.upload_file, color: Colors.blue),
-                            const SizedBox(width: 10),
-                            Text(
-                              "Choose File",
-                              style: TextStyle(color: Colors.blue, fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      )
+                              onTap: _pickFile,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.upload_file,
+                                      color: Colors.blue),
+                                  const SizedBox(width: 10),
+                                  const Text(
+                                    "Choose File",
+                                    style: TextStyle(
+                                        color: Colors.blue, fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                            )
                           : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              uploadedFileName!,
-                              overflow: TextOverflow.ellipsis,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    uploadedFileName!,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: _removeFile,
+                                ),
+                              ],
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: _removeFile,
-                          ),
-                        ],
-                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Only PDF, DOC, and DOCX files under 1MB are allowed.",
+                      style: TextStyle(fontSize: 12, color: Colors.redAccent),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 CustomText(
-                    writtenText: "HSN No.*",
-                    textStyle: ThemeTextStyle.style()),
+                    writtenText: "HSN No.*", textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
                 CustomTextFormField(
                     controller: hsnNoFieldController, focusNode: FocusNode()),
                 const SizedBox(height: 10),
                 CustomText(
+                    writtenText: "Approved Quantity",
+                    textStyle: ThemeTextStyle.style()),
+                const SizedBox(height: 10),
+                CustomTextFormField(
+                    controller: approvedQuantityController,
+                    focusNode: FocusNode()),
+                const SizedBox(height: 20),
+                CustomText(
                     writtenText: "SLA for QC Checks",
                     textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
-                CustomTextFormField(isReadOnly: true,
-                    controller: slaForQcController, focusNode: FocusNode()),
+                CustomTextFormField(
+                    isReadOnly: true,
+                    controller: slaForQcController,
+                    focusNode: FocusNode()),
                 const SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,9 +634,10 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                         isEnabled: uploadedFileName != null &&
                             selectedImages.isNotEmpty &&
                             (selectedApprovalStatus != "Rejected" ||
-                                inspectionRemarksController.text.trim().isNotEmpty),
+                                inspectionRemarksController.text
+                                    .trim()
+                                    .isNotEmpty),
                       ),
-
                     ),
                   ],
                 )

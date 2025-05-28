@@ -1,6 +1,7 @@
 
 import '../../../../common_imports.dart';
 import '../login_index.dart';
+import '../provider/login_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,8 +11,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late LoginProvider loginProvider;
   @override
   void initState() {
+    loginProvider = Provider.of<LoginProvider>(context, listen: false);
+    loginProvider.getUserRoleListApiCall();
     configLoading();
     getVersion();
     super.initState();

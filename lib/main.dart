@@ -19,34 +19,38 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      home: MultiProvider(
         // ignore: always_specify_types
-        providers: [
-          ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
-          ChangeNotifierProvider<SupplierProvider>(
-              create: (_) => SupplierProvider()),
-          // ChangeNotifierProvider<FeasibilityProvider>(
-          //     create: (_) => FeasibilityProvider()),
-        ],
-        child: SafeArea(
-            child: MaterialApp(
-                debugShowCheckedModeBanner: false,
-                navigatorKey: NavigateRoutes.navigatorKey,
-                theme: ThemeData(
-                    scaffoldBackgroundColor: ThemeColors.whiteColor,
-                    popupMenuTheme: const PopupMenuThemeData(
-                        color: ThemeColors.whiteColor,
-                        textStyle: TextStyle(color: ThemeColors.blackColor)),
-                    fontFamily: 'RadioCanada'),
-                builder: EasyLoading.init(
-                  builder: (BuildContext context, Widget? child) {
-                    return MediaQuery(
-                      data: MediaQuery.of(context)
-                          .copyWith(textScaler: const TextScaler.linear(1.0)),
-                      child: child!,
-                    );
-                  },
-                ),
-                home: const SplashScreen())));
+          providers: [
+            ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
+            ChangeNotifierProvider<SupplierProvider>(
+                create: (_) => SupplierProvider()),
+            // ChangeNotifierProvider<FeasibilityProvider>(
+            //     create: (_) => FeasibilityProvider()),
+          ],
+          child: SafeArea(
+              child: MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  navigatorKey: NavigateRoutes.navigatorKey,
+                  theme: ThemeData(
+                      scaffoldBackgroundColor: ThemeColors.whiteColor,
+                      popupMenuTheme: const PopupMenuThemeData(
+                          color: ThemeColors.whiteColor,
+                          textStyle: TextStyle(color: ThemeColors.blackColor)),
+                      fontFamily: 'RadioCanada'),
+                  builder: EasyLoading.init(
+                    builder: (BuildContext context, Widget? child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(textScaler: const TextScaler.linear(1.0)),
+                        child: child!,
+                      );
+                    },
+                  ),
+                  home: const SplashScreen()))),
+    );
   }
 }

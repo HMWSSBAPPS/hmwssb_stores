@@ -54,11 +54,11 @@ class ItemsByPurchaseOrderModel {
   String? purchaseOrderNo;
   int? lineItemPKey;
   String? itemName;
-  int? quantity;
+  double? quantity;
   String? units;
   String? readyNessStatus;
   String? itemMake;
-  int? quantitytoInspect;
+  double? quantitytoInspect;
   int? unitsRate;
   String? slaDate;
   int? refPkey;
