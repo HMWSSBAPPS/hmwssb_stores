@@ -17,7 +17,7 @@ class NavigateRoutes {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   /// Define all the routes here
-  static void navigateTo() {
+  static void toRoleScreen(String roleCode) {
     if (LocalStorages.getIsLoggedIn() == true) {
       final String roleCode = LocalStorages.getRole();
 

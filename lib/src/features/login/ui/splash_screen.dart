@@ -49,9 +49,10 @@ class _SplashScreenState extends State<SplashScreen> {
     printDebug(
         "packageInfo.version ${packageInfo.version} ${packageInfo.buildNumber} $appVersion $appVersionString");
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      loginProvider.getVersionCheckApiCall(appVersion).then((bool value) {
-        if (value) {
-          NavigateRoutes.navigateTo();
+      loginProvider.getVersionCheckApiCall(appVersion).then((bool isValidVersion) {
+        if (isValidVersion) {
+          final String roleCode = LocalStorages.getRole(); // or wherever your role code is stored
+          NavigateRoutes.toRoleScreen(roleCode);
         }
       });
     });

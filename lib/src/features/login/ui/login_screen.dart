@@ -195,9 +195,9 @@ class LoginScreenWidget extends StatelessWidget {
 
                                 await LocalStorages.saveUserData(
                                     localSaveType: LocalSaveType.userid,
-                                    value: loginProvider.loggedInUserData?.userID);
+                                    value: loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.userID);
 
-                                printDebug("Saved UserID: ${loginProvider.loggedInUserData?.userID}");
+                                printDebug("Saved UserID: ${loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.userID}");
 
                                 // Clear inputs after successful login
                                 loginProvider.mobileNoController.clear();

@@ -11,7 +11,7 @@ class AppUrls {
   static const String getAllSuplierDetailsUrl = '$baseUrl/GetSupplierDetailsByWingUserID';
   static const String getPurchaseOrderListBySupplierUrl = '$baseUrl/GetPurchaseOrderListBySupplier';
   static const String getItemByPurchaseOrderNumberUrl = '$baseUrl/GetItemsByPurchaseOrderNumber';
-  static const String getSaveIMSTPInspectionDetailsUrl = '$baseUrl/SaveIMSTPInspectionDetails';
+  static const String getSaveIMSTPInspectionDetailsUrl = '$baseUrl/SaveIMSInspectionDetails';
   static const String getUserRoleDetailsUrl = '$baseUrl/GetUserRoles';
 // static const String  Url= '$baseUrl/';
 // static const String  Url= '$baseUrl/';

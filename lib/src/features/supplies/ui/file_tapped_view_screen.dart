@@ -180,7 +180,6 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         return;
       }
     }
-
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
       purchaseOrderID:
           supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
@@ -200,7 +199,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       qCDoneBy: LocalStorages.getUserId(),
       qCStatus: selectedApprovalStatus ?? '',
       sLAQCChecks: widget.data.slaDate,
-      inspectionLevel: loginProvider.loggedInUserData?.wingType,
+      inspectionLevel: loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.wingType,
       uploadDocName: uploadedFileName ?? '',
       uploadDocBase64: uploadedFileBase64 ?? '',
       qCInspectionImages: imagesList,

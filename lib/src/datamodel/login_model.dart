@@ -46,30 +46,24 @@ class MItem1 {
 }
 
 class MItem2 {
-  int? userID;
   String? userName;
   String? oTP;
   String? agencyName;
   int? mobileNo;
-  String? wingType;
   List<RolesInfo>? rolesInfo;
 
   MItem2(
-      {this.userID,
-        this.userName,
+      {this.userName,
         this.oTP,
         this.agencyName,
         this.mobileNo,
-        this.wingType,
         this.rolesInfo});
 
   MItem2.fromJson(Map<String, dynamic> json) {
-    userID = json['UserID'];
     userName = json['UserName'];
     oTP = json['OTP'];
     agencyName = json['AgencyName'];
     mobileNo = json['MobileNo'];
-    wingType = json['WingType'];
     if (json['RolesInfo'] != null) {
       rolesInfo = <RolesInfo>[];
       json['RolesInfo'].forEach((v) {
@@ -80,12 +74,10 @@ class MItem2 {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['UserID'] = this.userID;
     data['UserName'] = this.userName;
     data['OTP'] = this.oTP;
     data['AgencyName'] = this.agencyName;
     data['MobileNo'] = this.mobileNo;
-    data['WingType'] = this.wingType;
     if (this.rolesInfo != null) {
       data['RolesInfo'] = this.rolesInfo!.map((v) => v.toJson()).toList();
     }
@@ -94,20 +86,26 @@ class MItem2 {
 }
 
 class RolesInfo {
+  int? userID;
   String? roleCode;
   String? roleName;
+  String? wingType;
 
-  RolesInfo({this.roleCode, this.roleName});
+  RolesInfo({this.userID, this.roleCode, this.roleName, this.wingType});
 
   RolesInfo.fromJson(Map<String, dynamic> json) {
+    userID = json['UserID'];
     roleCode = json['RoleCode'];
     roleName = json['RoleName'];
+    wingType = json['WingType'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['UserID'] = this.userID;
     data['RoleCode'] = this.roleCode;
     data['RoleName'] = this.roleName;
+    data['WingType'] = this.wingType;
     return data;
   }
 }

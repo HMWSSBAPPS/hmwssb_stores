@@ -1,75 +1,106 @@
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:hmwssb_stores/src/features/supplies/ui/purchase_order_details_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/store_manager_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../common_imports.dart';
+import '../../widgets/global_app_bar.dart';
 
 class SupplyDashboardScreen extends StatefulWidget {
-  const SupplyDashboardScreen({super.key});
+  final bool showFullForm;
+  const SupplyDashboardScreen({super.key, this.showFullForm = false});
 
   @override
   State<SupplyDashboardScreen> createState() => _SupplyDashboardScreenState();
 }
 
-class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
+class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   late SupplierProvider supplierProvider;
-  late LoginProvider  loginProvider;
+  late LoginProvider loginProvider;
   String? selectedSupplier;
   String? selectedPurchaseOrder;
-  bool isSubmitting = false; // Added loader flag
+  bool isSubmitting = false;
+  bool _isInitialized = false;
+  int? lastUserId;
+  String? lastWingType;
+
+  static const String kSelectedSupplierKey = 'selected_supplier';
+  static const String kSelectedPurchaseOrderKey = 'selected_purchase_order';
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
       supplierProvider = Provider.of<SupplierProvider>(context, listen: false);
       loginProvider = Provider.of<LoginProvider>(context, listen: false);
+      _tryLoadSupplierData();
+      loginProvider.addListener(_onLoginDataChanged);
+      _isInitialized = true;
+    }
+  }
 
-      if (loginProvider.loggedInUserData?.userID != null &&
-          loginProvider.loggedInUserData?.wingType != null) {
-        supplierProvider.getSupplierDetailsListApiCall(loginProvider);
-      } else {
-        // Optional: Delay the API call and check again later
-        Future.delayed(const Duration(milliseconds: 500), () {
-          final loginData = loginProvider.loggedInUserData;
-          if (loginData?.userID != null && loginData?.wingType != null) {
-            supplierProvider.getSupplierDetailsListApiCall(loginProvider);
-          } else {
-            EasyLoading.showError("User info not ready. Please re-login.");
-          }
-        });
+  @override
+  void dispose() {
+    loginProvider.removeListener(_onLoginDataChanged);
+    super.dispose();
+  }
+
+  void _onLoginDataChanged() {
+    final loginData = loginProvider.loggedInUserData;
+    if (loginData?.rolesInfo?.firstOrNull?.userID != lastUserId || loginData?.rolesInfo?.firstOrNull?.wingType != lastWingType) {
+      lastUserId = loginData?.rolesInfo?.firstOrNull?.userID;
+      lastWingType = loginData?.rolesInfo?.firstOrNull?.wingType;
+      _tryLoadSupplierData();
+    }
+  }
+
+  Future<void> _tryLoadSupplierData() async {
+    final loginData = loginProvider.loggedInUserData;
+    if (loginData?.rolesInfo?.firstOrNull?.userID != null && loginData?.rolesInfo?.firstOrNull?.wingType != null) {
+      await supplierProvider.getSupplierDetailsListApiCall(loginProvider);
+      final prefs = await SharedPreferences.getInstance();
+      final savedSupplier = prefs.getString(kSelectedSupplierKey);
+      final savedPO = prefs.getString(kSelectedPurchaseOrderKey);
+
+      if (savedSupplier != null) {
+        final matchedSupplier = supplierProvider.supplierDetailsList.firstWhere(
+              (s) => s.agencyName == savedSupplier,
+          orElse: () => supplierProvider.supplierDetailsList.first,
+        );
+        selectedSupplier = matchedSupplier.agencyName;
+        supplierProvider.selectedSupplierDetails = matchedSupplier;
+        await supplierProvider.getPurchaseOrderListBySuppliesApiCall();
+
+        if (savedPO != null) {
+          final matchedPO = supplierProvider.purchaseOrderList.firstWhere(
+                (po) => po.purchaseorderno == savedPO,
+            orElse: () => supplierProvider.purchaseOrderList.first,
+          );
+          selectedPurchaseOrder = matchedPO.purchaseorderno;
+          supplierProvider.selectedPurchaseOrderListBySupplies = matchedPO;
+        }
       }
-    });
+    }
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Consumer<SupplierProvider>(
-      builder: (BuildContext context, SupplierProvider provider, _) {
+      builder: (context, provider, _) {
         return PopScope(
           canPop: false,
           child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: ThemeColors.primaryColor,
-              iconTheme: const IconThemeData(color: ThemeColors.whiteColor),
-              title: FittedBox(
-                child: CustomText(
-                  writtenText: Constants.appFullName,
-                  textStyle: ThemeTextStyle.style(
-                    color: ThemeColors.whiteColor,
-                  ),
-                ),
-              ),
+            appBar:const GlobalAppBar(
+              title: Constants.appName,
+              showRoleDropdown: true,
             ),
             drawer: Drawer(
               width: context.width * .6,
               backgroundColor: ThemeColors.whiteColor,
               child: ListView(
                 children: <Widget>[
-                  Image.asset(
-                    Assets.appLogo,
-                    fit: BoxFit.fill,
-                  ),
+                  Image.asset(Assets.appLogo, fit: BoxFit.fill),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: CustomText(
@@ -85,8 +116,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
                       textStyle: ThemeTextStyle.style(),
                     ),
                     onTap: () async {
-                      await NavigateRoutes.navigateToLoginScreen(
-                          isLogoutTap: true);
+                      await NavigateRoutes.navigateToLoginScreen(isLogoutTap: true);
                     },
                   ),
                 ],
@@ -101,28 +131,34 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
                 children: [
                   // Supplier Dropdown
                   CustomDropdown<String>(
-                    labelStyle:
-                    ThemeTextStyle.style(fontWeight: FontWeight.normal),
+                    labelStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.supplierDetailsList
                         .map((supplier) => supplier.agencyName ?? '')
                         .toList(),
-                    itemLabel: (String item) => item,
+                    itemLabel: (item) => item,
                     value: selectedSupplier,
                     hintText: 'Select Supplier',
-                    onChanged: (String? newValue) async {
+                    onChanged: (newValue) async {
                       if (newValue != null) {
+                        final prefs = await SharedPreferences.getInstance();
+
+                        if (!mounted) return; // ✅ prevent setState if the widget is no longer in tree
                         setState(() {
                           selectedSupplier = newValue;
-                          selectedPurchaseOrder = null; // Reset purchase order selection
+                          selectedPurchaseOrder = null;
                         });
 
-                        provider.selectedSupplierDetails =
-                            provider.supplierDetailsList.firstWhere(
-                                    (s) => s.agencyName == newValue);
+                        prefs.setString(kSelectedSupplierKey, newValue);
+                        prefs.remove(kSelectedPurchaseOrderKey);
+
+                        supplierProvider.selectedSupplierDetails = provider
+                            .supplierDetailsList
+                            .firstWhere((s) => s.agencyName == newValue);
 
                         await provider.getPurchaseOrderListBySuppliesApiCall();
                       }
                     },
+
                     showSearchBox: provider.supplierDetailsList.length > 6,
                     labelName: 'Supplier',
                   ),
@@ -130,46 +166,47 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
 
                   // Purchase Order Dropdown
                   CustomDropdown<String>(
-                    labelStyle:
-                    ThemeTextStyle.style(fontWeight: FontWeight.normal),
+                    labelStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.purchaseOrderList
                         .map((order) => order.purchaseorderno ?? '')
                         .toList(),
-                    itemLabel: (String item) => item,
+                    itemLabel: (item) => item,
                     value: selectedPurchaseOrder,
                     hintText: 'Select Purchase Order',
                     onChanged: selectedSupplier != null
-                        ? (String? newValue) async {
+                        ? (newValue) async {
                       if (newValue != null) {
+                        final prefs = await SharedPreferences.getInstance();
                         setState(() {
                           selectedPurchaseOrder = newValue;
                         });
+                        prefs.setString(kSelectedPurchaseOrderKey, newValue);
 
                         provider.selectedPurchaseOrderListBySupplies =
                             provider.purchaseOrderList.firstWhere(
                                     (order) => order.purchaseorderno == newValue);
                       }
                     }
-                        : null, // Disable when no supplier is selected
+                        : null,
                     showSearchBox: provider.purchaseOrderList.length > 6,
                     labelName: 'Purchase Order',
                   ),
-
                   const SizedBox(height: 24),
 
-                  // Submit Button with Loader
+                  // Submit Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: (selectedSupplier != null &&
                           selectedPurchaseOrder != null &&
-                          !isSubmitting) // Prevent multiple clicks
+                          !isSubmitting)
                           ? () async {
                         setState(() {
                           isSubmitting = true;
                         });
 
-                        await provider.getItemsByPurchaseOrderNumberApiCall(loginProvider);
+                        await provider.getItemsByPurchaseOrderNumberApiCall(
+                            loginProvider);
 
                         setState(() {
                           isSubmitting = false;
@@ -180,7 +217,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
                           widget: PurchaseOrderDetailsScreen(),
                         );
                       }
-                          : null, // Disable button if selections are incomplete
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ThemeColors.primaryColor,
                         disabledBackgroundColor: Colors.grey,
@@ -197,8 +234,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
                       )
                           : const Text(
                         'Submit',
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 16),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ),
                   ),
@@ -211,4 +247,3 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen>{
     );
   }
 }
-
