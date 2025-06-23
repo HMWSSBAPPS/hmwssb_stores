@@ -10,9 +10,11 @@ enum LocalSaveType {
   mobileNumber,
   role,
   otp,
+  roleCode,
   userid,
   wingid,
   fullUserData,
+  selectedRoleName, // ✅ NEW
 }
 
 class LocalStorages {
@@ -27,6 +29,7 @@ class LocalStorages {
     required dynamic value,
   }) {
     dynamic val = value ?? (localSaveType == LocalSaveType.isLoggedIn ? false : '');
+    printDebug(val);
     switch (localSaveType) {
       case LocalSaveType.isLoggedIn:
         _prefs?.setBool(ShareKey.isLoggedIn, val);
@@ -40,6 +43,9 @@ class LocalStorages {
       case LocalSaveType.role:
         _prefs?.setString(ShareKey.role, val);
         break;
+      case LocalSaveType.roleCode:
+        _prefs?.setString(ShareKey.roleCode, val);
+        break;
       case LocalSaveType.otp:
         _prefs?.setString(ShareKey.otp, val);
         break;
@@ -52,6 +58,9 @@ class LocalStorages {
       case LocalSaveType.fullUserData:
         _prefs?.setString(ShareKey.fullUserData, jsonEncode(val));
         break;
+      case LocalSaveType.selectedRoleName: // ✅ NEW
+        _prefs?.setString(ShareKey.selectedRoleName, val);
+        break;
     }
   }
 
@@ -62,29 +71,23 @@ class LocalStorages {
   static String getOtp() => _prefs?.getString(ShareKey.otp) ?? Constants.empty;
   static int getUserId() => _prefs?.getInt(ShareKey.userId) ?? 0;
   static String getWingId() => _prefs?.getString(ShareKey.wingId) ?? Constants.empty;
+  static String getRoleCode() => _prefs?.getString(ShareKey.roleCode) ?? Constants.empty;
   static String? getFullUserDataRaw() => _prefs?.getString(ShareKey.fullUserData);
 
-  static Map<String, dynamic>? getFullUserData() {
+  static MItem2? getFullUserData() {
     final raw = getFullUserDataRaw();
     if (raw == null || raw.isEmpty) return null;
     try {
-      return jsonDecode(raw);
+      return MItem2.fromJson(jsonDecode(raw));
     } catch (e) {
       log("Error decoding fullUserData: $e");
       return null;
     }
   }
 
-  static MItem2? getParsedLoginUser() {
-    final data = getFullUserData();
-    if (data == null) return null;
-    try {
-      return LoginUserModel.fromJson(data).mItem2;
-    } catch (e) {
-      log("Error parsing MItem2: $e");
-      return null;
-    }
-  }
+  /// ✅ Get previously selected roleName
+  static String getSelectedRoleName() =>
+      _prefs?.getString(ShareKey.selectedRoleName) ?? Constants.empty;
 
   static Future<void> logOutUser() async {
     await _prefs?.clear();
@@ -96,8 +99,10 @@ class ShareKey {
   static String name = "name";
   static String mobileNumber = "mobile_number";
   static String role = "role";
-  static String userId = "userid";
   static String otp = "otp";
+  static String roleCode = "roleCode";
+  static String userId = "userid";
   static String wingId = "wingid";
   static String fullUserData = "full_user_data";
+  static String selectedRoleName = "selected_role_name"; // ✅ NEW
 }

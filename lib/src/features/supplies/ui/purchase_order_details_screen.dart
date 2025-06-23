@@ -1,5 +1,12 @@
 
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/AdminSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcDgmSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcGmSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcManagerSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreDgmSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreGmSubmitScreen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreManagerSubmitScreen.dart';
 
 import '../../../../common_imports.dart';
 import '../../../datamodel/items_by_purchase_order_number.dart';
@@ -7,9 +14,20 @@ import 'file_tapped_view_screen.dart';
 import 'package:intl/intl.dart';
 
 
-class PurchaseOrderDetailsScreen extends StatelessWidget {
+class PurchaseOrderDetailsScreen extends StatefulWidget {
   const PurchaseOrderDetailsScreen({super.key});
 
+  @override
+  State<PurchaseOrderDetailsScreen> createState() => _PurchaseOrderDetailsScreenState();
+}
+
+class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    debugPrint('🟢 Screen Loaded: PurchaseOrderDetailsScreen');
+  }
   @override
   Widget build(BuildContext context) {
     return CommonAppBar(
@@ -96,10 +114,10 @@ class PurchaseOrderDetailsScreen extends StatelessWidget {
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
       child: InkWell(
         onTap: () async {
-          await NavigateRoutes.navigatePush(
-              widget: FileViewTappedScreen(data: data), context: context);
+          final String roleCode = LocalStorages.getRole();
+          await NavigateRoutes.toRoleSubmitScreen(roleCode, data);
         },
-        child: Container(
+          child: Container(
             decoration: BoxDecoration(
                 color: ThemeColors.whiteColor,
                 borderRadius: BorderRadius.circular(8.0),

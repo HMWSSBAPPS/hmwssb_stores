@@ -2,7 +2,16 @@
 
 
 import '../../../common_imports.dart';
+import '../../datamodel/items_by_purchase_order_number.dart';
 import '../../features/login/login_index.dart';
+import '../../features/supplies/ui/file_tapped_view_screen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/AdminSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/QcDgmSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/QcGmSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/QcManagerSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/StoreDgmSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/StoreGmSubmitScreen.dart';
+import '../../features/supplies/ui/role_based_submit_screen/StoreManagerSubmitScreen.dart';
 import '../../features/supplies/ui/roles_based_screen/admin_screen.dart';
 import '../../features/supplies/ui/roles_based_screen/store_gm_screen.dart';
 import '../../features/supplies/ui/roles_based_screen/store_manager_screen.dart';
@@ -19,7 +28,9 @@ class NavigateRoutes {
   /// Define all the routes here
   static void toRoleScreen(String roleCode) {
     if (LocalStorages.getIsLoggedIn() == true) {
-      final String roleCode = LocalStorages.getRole();
+      // final String roleCode = LocalStorages.getRole();
+      printDebug("role name $roleCode");
+
 
       switch (roleCode) {
         case 'TP':
@@ -40,7 +51,7 @@ class NavigateRoutes {
         case 'QCMGR':
           toQCManagerScreen();
           break;
-        case 'QCGM':
+        case 'QCGM': printDebug("object it went inside this $roleCode");
           toQCGMScreen();
           break;
         case 'QCDGM':
@@ -56,6 +67,36 @@ class NavigateRoutes {
     }
   }
 
+  static Future<void> toRoleSubmitScreen(String roleCode, ItemsByPurchaseOrderModel data) async {
+    switch (roleCode) {
+      case 'TP':
+        await navigatePush(widget: FileViewTappedScreen(data: data));
+        break;
+      case 'ADMIN':
+        await navigatePush(widget: AdminSubmitScreen(data: data));
+        break;
+      case 'STMGR':
+        await navigatePush(widget: StoreManagerSubmitScreen(data: data));
+        break;
+      case 'STGM':
+        await navigatePush(widget: StoreGmSubmitScreen(data: data));
+        break;
+      case 'STDGM':
+        await navigatePush(widget: StoreDgmSubmitScreen(data: data));
+        break;
+      case 'QCMGR':
+        await navigatePush(widget: QcManagerSubmitScreen(data: data));
+        break;
+      case 'QCGM':
+        await navigatePush(widget: QcGmSubmitScreen(data: data));
+        break;
+      case 'QCDGM':
+        await navigatePush(widget: QcDgmSubmitScreen(data: data));
+        break;
+      default:
+        EasyLoading.showError("No submission screen defined for this role: $roleCode");
+    }
+  }
 
   /// Role-based navigation methods
   static void toSupplyDashboardScreen() {

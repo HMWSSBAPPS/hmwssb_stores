@@ -75,43 +75,10 @@ class _AdminScreenState extends State<AdminScreen>{
       builder: (BuildContext context, SupplierProvider provider, _) {
         return PopScope(
           canPop: false,
-          child: Scaffold(
-            appBar:const GlobalAppBar(
-              title: Constants.appName,
-              showRoleDropdown: true,
-            ),
-            drawer: Drawer(
-              width: context.width * .6,
-              backgroundColor: ThemeColors.whiteColor,
-              child: ListView(
-                children: <Widget>[
-                  Image.asset(
-                    Assets.appLogo,
-                    fit: BoxFit.fill,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: CustomText(
-                      writtenText: LocalStorages.getMobileNumber(),
-                      textStyle: ThemeTextStyle.style(),
-                    ),
-                  ),
-                  const DottedDivider(),
-                  ListTile(
-                    leading: const CustomIcon(icon: Icons.logout),
-                    title: CustomText(
-                      writtenText: Constants.logOut,
-                      textStyle: ThemeTextStyle.style(),
-                    ),
-                    onTap: () async {
-                      await NavigateRoutes.navigateToLoginScreen(
-                          isLogoutTap: true);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            body: provider.isLoading
+          child: GlobalAppBar(
+
+
+              body: provider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Padding(
               padding: const EdgeInsets.all(16.0),

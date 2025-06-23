@@ -61,14 +61,15 @@ class LoginProvider extends ChangeNotifier {
 
   void notifyToAllValues() => safeNotifyListeners();
 
+
   void setAppVersion(double version) {
     appVersion = version;
-    safeNotifyListeners();
+    notifyToAllValues();
   }
 
   void isLoadData(bool loading) {
     isLoading = loading;
-    safeNotifyListeners();
+   // safeNotifyListeners();
   }
 
   void startTimer() {
@@ -79,7 +80,7 @@ class LoginProvider extends ChangeNotifier {
         t.cancel();
       } else {
         timer--;
-        safeNotifyListeners();
+        notifyToAllValues();
       }
     });
   }
@@ -101,32 +102,124 @@ class LoginProvider extends ChangeNotifier {
       return;
     }
 
-    final Map<String, dynamic>? userJson = LocalStorages.getFullUserData();
+    final MItem2? userJson = LocalStorages.getFullUserData();
     if (userJson != null) {
-      loggedInUserData = MItem2.fromJson(Map<String, dynamic>.from(userJson));
+      loggedInUserData = userJson;
       await handleRoleAndNavigate(loggedInUserData!);
     } else {
       EasyLoading.showError("User data not found");
     }
   }
 // Expose roles and selectedRole to GlobalAppBar
-  List<UserRoleModel> get roles => userRoleList;
-  UserRoleModel? get selectedRole => selectedUserRole;
+//   List<UserRoleModel> get roles => userRoleList;
+//   UserRoleModel? get selectedRole => selectedUserRole;
 
-// Allow GlobalAppBar to update selected role
-  void setSelectedRole(UserRoleModel role) async {
-    selectedUserRole = role;
-    await LocalStorages.saveUserData(localSaveType: LocalSaveType.role, value: role.roleCode);
-    final matchedLoginRole = loggedInUserData?.rolesInfo?.firstWhere(
-          (info) => info.roleCode == role.roleCode,
-      orElse: () => RolesInfo(),
+  List<Map<String, String>> loginUserRolesMap=[];
+  Map<String, String> selectedRole={};
+
+  Future<void> selectRole() async {
+    loginUserRolesMap.clear();
+
+    final fullUserData = LocalStorages.getFullUserData();
+    final rolesInfo = fullUserData?.rolesInfo;
+    final savedRoleName = LocalStorages.getSelectedRoleName();
+
+    if (rolesInfo == null || rolesInfo.isEmpty) {
+      printDebug("❌ No roles found in stored user data.");
+      return;
+    }
+
+    loginUserRolesMap = rolesInfo.map((e) => {
+      "userID": "${e.userID}",
+      "wingType": "${e.wingType}",
+      "roleName": "${e.roleName}",
+      "roleCode": "${e.roleCode}",
+    }).toList();
+
+    if (loginUserRolesMap.isNotEmpty) {
+      // Only restore if a saved role exists
+      if (savedRoleName != null && savedRoleName.isNotEmpty) {
+        selectedRole = loginUserRolesMap.firstWhere(
+              (role) => role['roleName'] == savedRoleName,
+          orElse: () => loginUserRolesMap.first,
+        );
+      } else {
+        selectedRole = loginUserRolesMap.first;
+      }
+
+      await saveSelectedRoleLocally(selectedRole);
+    }
+  }
+
+  Future<void> saveSelectedRoleLocally(Map<String, String> role) async {
+    selectedRole = role;
+
+    await LocalStorages.saveUserData(
+      localSaveType: LocalSaveType.userid,
+      value: role['userID'] ?? '',
     );
     await LocalStorages.saveUserData(
       localSaveType: LocalSaveType.wingid,
-      value: matchedLoginRole?.wingType ?? '',
+      value: role['wingType'] ?? '',
     );
-    safeNotifyListeners();
+    await LocalStorages.saveUserData(
+      localSaveType: LocalSaveType.selectedRoleName,
+      value: role['roleName'] ?? '',
+    );
+    await LocalStorages.saveUserData(
+      localSaveType: LocalSaveType.roleCode,
+      value: role['roleCode'] ?? '', // ✅ THIS IS WHAT YOU NEED LATER
+    );
+
+    notifyToAllValues();
   }
+
+
+
+
+
+  // void selectRole()async{
+  //   loginUserRolesMap=[];
+  //   if(LocalStorages.getFullUserData()!=null){
+  //     final rolesInfo = LocalStorages.getFullUserData()?.rolesInfo;
+  //
+  //     if (rolesInfo != null && rolesInfo.isNotEmpty) {
+  //       for (var e in rolesInfo) {
+  //         loginUserRolesMap.add({
+  //           "userID": "${e.userID}",
+  //           "wingType": "${e.wingType}",
+  //           "roleName": "${e.roleName}",
+  //           "roleCode": "${e.roleCode}",
+  //         });
+  //       }
+  //       if(loginUserRolesMap.isNotEmpty){
+  //         selectedRole=loginUserRolesMap.first;
+  //         await LocalStorages.saveUserData(localSaveType: LocalSaveType.userid, value: selectedRole['userID']??'' );
+  //         await LocalStorages.saveUserData(
+  //             localSaveType: LocalSaveType.wingid,
+  //             value: selectedRole['wingType']?? ''
+  //         );
+  //       }
+  //     }
+  //     // loginUserRolesMap =
+  //   }
+  //   // notifyToAllValues();
+  // }
+
+// Allow GlobalAppBar to update selected role
+//   void setSelectedRole(UserRoleModel role) async {
+//     selectedUserRole = role;
+//     await LocalStorages.saveUserData(localSaveType: LocalSaveType.role, value: role.roleCode);
+//     final matchedLoginRole = loggedInUserData?.rolesInfo?.firstWhere(
+//           (info) => info.roleCode == role.roleCode,
+//       orElse: () => RolesInfo(),
+//     );
+//     await LocalStorages.saveUserData(
+//       localSaveType: LocalSaveType.wingid,
+//       value: matchedLoginRole?.wingType ?? '',
+//     );
+//     safeNotifyListeners();
+//   }
 
   Future<void> getOtpApiCall() async {
     isUserExist = false;
@@ -162,7 +255,7 @@ class LoginProvider extends ChangeNotifier {
 
         await LocalStorages.saveUserData(localSaveType: LocalSaveType.userid, value: mItem2?.rolesInfo?.first.userID);
         await LocalStorages.saveUserData(localSaveType: LocalSaveType.wingid, value: mItem2?.rolesInfo?.first.wingType ?? '');
-        await LocalStorages.saveUserData(localSaveType: LocalSaveType.fullUserData, value: mItem2?.toJson());
+        await LocalStorages.saveUserData(localSaveType: LocalSaveType.fullUserData, value: mItem2);
 
         await getUserRoleListApiCall();
         EasyLoading.showSuccess(ConstantMessage.otpSentSuccessfully);
@@ -173,7 +266,7 @@ class LoginProvider extends ChangeNotifier {
       EasyLoading.showInfo(ConstantMessage.somethingWentWrongPleaseTryAgain);
     }
 
-    safeNotifyListeners();
+    notifyToAllValues();
   }
 
   Future<void> handleRoleAndNavigate(MItem2 loginUser) async {
@@ -210,6 +303,7 @@ class LoginProvider extends ChangeNotifier {
       await LocalStorages.saveUserData(localSaveType: LocalSaveType.wingid, value: matchedLoginRole?.wingType ?? '');
 
       navigateToRoleScreen(matchedRole.roleCode!);
+
     } else {
       EasyLoading.showInfo('No matching role found');
     }

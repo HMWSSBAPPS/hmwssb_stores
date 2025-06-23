@@ -180,7 +180,9 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         return;
       }
     }
+    final String wingType = LocalStorages.getWingId();
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
+
       purchaseOrderID:
           supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
       purchaseOrderLineItemID: widget.data.lineItemPKey,
@@ -199,15 +201,16 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       qCDoneBy: LocalStorages.getUserId(),
       qCStatus: selectedApprovalStatus ?? '',
       sLAQCChecks: widget.data.slaDate,
-      inspectionLevel: loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.wingType,
+      inspectionLevel: wingType,
       uploadDocName: uploadedFileName ?? '',
       uploadDocBase64: uploadedFileBase64 ?? '',
       qCInspectionImages: imagesList,
     );
-    printDebug(
-        'Encoded base64 starts with: ${uploadedFileBase64?.substring(0, 30)}');
+    // printDebug(
+    //     'Encoded base64 starts with: ${uploadedFileBase64?.substring(0, 30)}');
 
-    printDebug("Submitted Data: ${postData.toJson()}");
+    //printDebug("Submitted Data: ${postData.toJson()}");
+    printDebug("Submitted Data2: ${postData.inspectionLevel}");
     await supplierProvider.postIMSQInspectDetailsApiCall(
         postData, supplierProvider);
   }

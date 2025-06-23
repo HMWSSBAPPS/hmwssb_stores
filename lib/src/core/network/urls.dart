@@ -9,10 +9,11 @@ class AppUrls {
   static const String getLoginOTPExternalUrl = '$baseUrl/SendLoginOTPExternal';
   // static const String getAllSuplierDetailsUrl = '$baseUrl/GetAllSuplierDetails';
   static const String getAllSuplierDetailsUrl = '$baseUrl/GetSupplierDetailsByWingUserID';
-  static const String getPurchaseOrderListBySupplierUrl = '$baseUrl/GetPurchaseOrderListBySupplier';
+  static const String getPurchaseOrderListBySupplierUrl = '$baseUrl/GetPurchaseOrderListBySupplierAndUserID';
   static const String getItemByPurchaseOrderNumberUrl = '$baseUrl/GetItemsByPurchaseOrderNumber';
   static const String getSaveIMSTPInspectionDetailsUrl = '$baseUrl/SaveIMSInspectionDetails';
   static const String getUserRoleDetailsUrl = '$baseUrl/GetUserRoles';
+  static const String getTPInspectionDetailsUrl = '$baseUrl/GetTPInspectionDetails';
 // static const String  Url= '$baseUrl/';
 // static const String  Url= '$baseUrl/';
 // static const String  Url= '$baseUrl/';

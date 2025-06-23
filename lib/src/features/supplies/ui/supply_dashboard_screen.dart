@@ -27,6 +27,8 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   static const String kSelectedSupplierKey = 'selected_supplier';
   static const String kSelectedPurchaseOrderKey = 'selected_purchase_order';
 
+
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -69,7 +71,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
         );
         selectedSupplier = matchedSupplier.agencyName;
         supplierProvider.selectedSupplierDetails = matchedSupplier;
-        await supplierProvider.getPurchaseOrderListBySuppliesApiCall();
+        //await supplierProvider.getPurchaseOrderListBySuppliesApiCall();
 
         if (savedPO != null) {
           final matchedPO = supplierProvider.purchaseOrderList.firstWhere(
@@ -88,40 +90,11 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   Widget build(BuildContext context) {
     return Consumer<SupplierProvider>(
       builder: (context, provider, _) {
+        // printDebug(LocalStorages.getFullUserData()!.mobileNo);
         return PopScope(
           canPop: false,
-          child: Scaffold(
-            appBar:const GlobalAppBar(
-              title: Constants.appName,
-              showRoleDropdown: true,
-            ),
-            drawer: Drawer(
-              width: context.width * .6,
-              backgroundColor: ThemeColors.whiteColor,
-              child: ListView(
-                children: <Widget>[
-                  Image.asset(Assets.appLogo, fit: BoxFit.fill),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: CustomText(
-                      writtenText: LocalStorages.getMobileNumber(),
-                      textStyle: ThemeTextStyle.style(),
-                    ),
-                  ),
-                  const DottedDivider(),
-                  ListTile(
-                    leading: const CustomIcon(icon: Icons.logout),
-                    title: CustomText(
-                      writtenText: Constants.logOut,
-                      textStyle: ThemeTextStyle.style(),
-                    ),
-                    onTap: () async {
-                      await NavigateRoutes.navigateToLoginScreen(isLogoutTap: true);
-                    },
-                  ),
-                ],
-              ),
-            ),
+          child:  GlobalAppBar(
+
             body: provider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Padding(
