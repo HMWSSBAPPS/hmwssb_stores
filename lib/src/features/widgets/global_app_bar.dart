@@ -109,6 +109,8 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
                             orElse: () => {},
                           );
 
+                          print('selectedMap');
+                          print(selectedMap);
                           await loginProvider.saveSelectedRoleLocally(selectedMap);
 
                           await supplierProvider.getSupplierDetailsListApiCall(loginProvider);

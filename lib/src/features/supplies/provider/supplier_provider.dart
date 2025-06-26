@@ -191,11 +191,13 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
 
     InspectionDetailsModel? selectedInspectionDetails;
     List<MItem2> inspectionDetailRecords = <MItem2>[];
+    List<MItem2> inspectionDetailRecordsAdditional = <MItem2>[]; // 👈 ADD THIS
 
     /// Fetch inspection details for a given PO
-    Future<void> getTpInspectionDetalsApiCall(LoginProvider loginProvider,) async {
+    Future<void> getTpInspectionDetailsApiCall(LoginProvider loginProvider) async {
       isLoadData(true);
       inspectionDetailRecords.clear();
+      inspectionDetailRecordsAdditional.clear(); // 👈 CLEAR additional list as well
       selectedInspectionDetails = null;
 
       final int userId = LocalStorages.getUserId();
@@ -223,10 +225,8 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         final model = InspectionDetailsModel.fromJson(response.body);
 
         if (model.mItem1?.responseCode == '200') {
-          final rawList = model.mItem2;
-          if (rawList != null) {
-            inspectionDetailRecords = rawList.map((e) => MItem2.fromJson(e as Map<String, dynamic>)).toList();
-          }
+          inspectionDetailRecords = model.mItem2 ?? [];
+          inspectionDetailRecordsAdditional = model.mItem3 ?? []; // 👈 POPULATE ADDITIONAL RECORDS
         }
       } else {
         EasyLoading.showError("Failed to fetch inspection details");
@@ -235,6 +235,8 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
       isLoadData(false);
       notifyToAllValues();
     }
+
+
 
     void notifyToAllValues() => notifyListeners();
   }

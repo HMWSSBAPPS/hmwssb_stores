@@ -1,27 +1,36 @@
 class InspectionDetailsModel {
   MItem1? mItem1;
   List<MItem2>? mItem2;
+  List<MItem2>? mItem3; // Reusing MItem2 as structure is the same
 
-  InspectionDetailsModel({this.mItem1, this.mItem2});
+  InspectionDetailsModel({this.mItem1, this.mItem2, this.mItem3});
 
   InspectionDetailsModel.fromJson(Map<String, dynamic> json) {
-    mItem1 =
-    json['m_Item1'] != null ? new MItem1.fromJson(json['m_Item1']) : null;
+    mItem1 = json['m_Item1'] != null ? MItem1.fromJson(json['m_Item1']) : null;
     if (json['m_Item2'] != null) {
       mItem2 = <MItem2>[];
       json['m_Item2'].forEach((v) {
-        mItem2!.add(new MItem2.fromJson(v));
+        mItem2!.add(MItem2.fromJson(v));
+      });
+    }
+    if (json['m_Item3'] != null) {
+      mItem3 = <MItem2>[];
+      json['m_Item3'].forEach((v) {
+        mItem3!.add(MItem2.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.mItem1 != null) {
-      data['m_Item1'] = this.mItem1!.toJson();
+    final Map<String, dynamic> data = {};
+    if (mItem1 != null) {
+      data['m_Item1'] = mItem1!.toJson();
     }
-    if (this.mItem2 != null) {
-      data['m_Item2'] = this.mItem2!.map((v) => v.toJson()).toList();
+    if (mItem2 != null) {
+      data['m_Item2'] = mItem2!.map((v) => v.toJson()).toList();
+    }
+    if (mItem3 != null) {
+      data['m_Item3'] = mItem3!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -41,10 +50,10 @@ class MItem1 {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ResponseCode'] = this.responseCode;
-    data['ResponseType'] = this.responseType;
-    data['Description'] = this.description;
+    final Map<String, dynamic> data = {};
+    data['ResponseCode'] = responseCode;
+    data['ResponseType'] = responseType;
+    data['Description'] = description;
     return data;
   }
 }
@@ -53,11 +62,11 @@ class MItem2 {
   int? pKey;
   int? purchaseOrderID;
   int? purchaseOrderLineItemID;
-  int? quantity;
+  double? quantity;
   String? unitType;
   String? gmReadiness;
   String? itemMake;
-  int? quantityToInspect;
+  double? quantityToInspect;
   String? batchNo;
   String? manufactureDate;
   String? inspectionDate;
@@ -68,40 +77,41 @@ class MItem2 {
   String? createdDate;
   String? hSMNo;
   int? refPKey;
-  int? qCApprovedQuantity;
+  double? qCApprovedQuantity;
   List<QCInspectionImages>? qCInspectionImages;
 
-  MItem2(
-      {this.pKey,
-        this.purchaseOrderID,
-        this.purchaseOrderLineItemID,
-        this.quantity,
-        this.unitType,
-        this.gmReadiness,
-        this.itemMake,
-        this.quantityToInspect,
-        this.batchNo,
-        this.manufactureDate,
-        this.inspectionDate,
-        this.inspectionRemarks,
-        this.qCDoneBy,
-        this.sLAQCChecks,
-        this.qCStatus,
-        this.createdDate,
-        this.hSMNo,
-        this.refPKey,
-        this.qCApprovedQuantity,
-        this.qCInspectionImages});
+  MItem2({
+    this.pKey,
+    this.purchaseOrderID,
+    this.purchaseOrderLineItemID,
+    this.quantity,
+    this.unitType,
+    this.gmReadiness,
+    this.itemMake,
+    this.quantityToInspect,
+    this.batchNo,
+    this.manufactureDate,
+    this.inspectionDate,
+    this.inspectionRemarks,
+    this.qCDoneBy,
+    this.sLAQCChecks,
+    this.qCStatus,
+    this.createdDate,
+    this.hSMNo,
+    this.refPKey,
+    this.qCApprovedQuantity,
+    this.qCInspectionImages,
+  });
 
   MItem2.fromJson(Map<String, dynamic> json) {
     pKey = json['PKey'];
     purchaseOrderID = json['PurchaseOrderID'];
     purchaseOrderLineItemID = json['PurchaseOrderLineItemID'];
-    quantity = json['Quantity'];
+    quantity = (json['Quantity'] as num?)?.toDouble();
     unitType = json['UnitType'];
     gmReadiness = json['GmReadiness'];
     itemMake = json['ItemMake'];
-    quantityToInspect = json['QuantityToInspect'];
+    quantityToInspect = (json['QuantityToInspect'] as num?)?.toDouble();
     batchNo = json['BatchNo'];
     manufactureDate = json['ManufactureDate'];
     inspectionDate = json['InspectionDate'];
@@ -112,39 +122,39 @@ class MItem2 {
     createdDate = json['CreatedDate'];
     hSMNo = json['HSMNo'];
     refPKey = json['RefPKey'];
-    qCApprovedQuantity = json['QCApprovedQuantity'];
+    qCApprovedQuantity = (json['QCApprovedQuantity'] as num?)?.toDouble();
     if (json['QCInspectionImages'] != null) {
       qCInspectionImages = <QCInspectionImages>[];
       json['QCInspectionImages'].forEach((v) {
-        qCInspectionImages!.add(new QCInspectionImages.fromJson(v));
+        qCInspectionImages!.add(QCInspectionImages.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['PKey'] = this.pKey;
-    data['PurchaseOrderID'] = this.purchaseOrderID;
-    data['PurchaseOrderLineItemID'] = this.purchaseOrderLineItemID;
-    data['Quantity'] = this.quantity;
-    data['UnitType'] = this.unitType;
-    data['GmReadiness'] = this.gmReadiness;
-    data['ItemMake'] = this.itemMake;
-    data['QuantityToInspect'] = this.quantityToInspect;
-    data['BatchNo'] = this.batchNo;
-    data['ManufactureDate'] = this.manufactureDate;
-    data['InspectionDate'] = this.inspectionDate;
-    data['InspectionRemarks'] = this.inspectionRemarks;
-    data['QCDoneBy'] = this.qCDoneBy;
-    data['SLAQCChecks'] = this.sLAQCChecks;
-    data['QCStatus'] = this.qCStatus;
-    data['CreatedDate'] = this.createdDate;
-    data['HSMNo'] = this.hSMNo;
-    data['RefPKey'] = this.refPKey;
-    data['QCApprovedQuantity'] = this.qCApprovedQuantity;
-    if (this.qCInspectionImages != null) {
+    final Map<String, dynamic> data = {};
+    data['PKey'] = pKey;
+    data['PurchaseOrderID'] = purchaseOrderID;
+    data['PurchaseOrderLineItemID'] = purchaseOrderLineItemID;
+    data['Quantity'] = quantity;
+    data['UnitType'] = unitType;
+    data['GmReadiness'] = gmReadiness;
+    data['ItemMake'] = itemMake;
+    data['QuantityToInspect'] = quantityToInspect;
+    data['BatchNo'] = batchNo;
+    data['ManufactureDate'] = manufactureDate;
+    data['InspectionDate'] = inspectionDate;
+    data['InspectionRemarks'] = inspectionRemarks;
+    data['QCDoneBy'] = qCDoneBy;
+    data['SLAQCChecks'] = sLAQCChecks;
+    data['QCStatus'] = qCStatus;
+    data['CreatedDate'] = createdDate;
+    data['HSMNo'] = hSMNo;
+    data['RefPKey'] = refPKey;
+    data['QCApprovedQuantity'] = qCApprovedQuantity;
+    if (qCInspectionImages != null) {
       data['QCInspectionImages'] =
-          this.qCInspectionImages!.map((v) => v.toJson()).toList();
+          qCInspectionImages!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -160,15 +170,16 @@ class QCInspectionImages {
   int? imageType;
   String? createdDate;
 
-  QCInspectionImages(
-      {this.pKey,
-        this.refPkey,
-        this.imagePath,
-        this.imageName,
-        this.imageLatitude,
-        this.imageLongitude,
-        this.imageType,
-        this.createdDate});
+  QCInspectionImages({
+    this.pKey,
+    this.refPkey,
+    this.imagePath,
+    this.imageName,
+    this.imageLatitude,
+    this.imageLongitude,
+    this.imageType,
+    this.createdDate,
+  });
 
   QCInspectionImages.fromJson(Map<String, dynamic> json) {
     pKey = json['PKey'];
@@ -182,15 +193,15 @@ class QCInspectionImages {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['PKey'] = this.pKey;
-    data['RefPkey'] = this.refPkey;
-    data['ImagePath'] = this.imagePath;
-    data['ImageName'] = this.imageName;
-    data['ImageLatitude'] = this.imageLatitude;
-    data['ImageLongitude'] = this.imageLongitude;
-    data['ImageType'] = this.imageType;
-    data['CreatedDate'] = this.createdDate;
+    final Map<String, dynamic> data = {};
+    data['PKey'] = pKey;
+    data['RefPkey'] = refPkey;
+    data['ImagePath'] = imagePath;
+    data['ImageName'] = imageName;
+    data['ImageLatitude'] = imageLatitude;
+    data['ImageLongitude'] = imageLongitude;
+    data['ImageType'] = imageType;
+    data['CreatedDate'] = createdDate;
     return data;
   }
 }

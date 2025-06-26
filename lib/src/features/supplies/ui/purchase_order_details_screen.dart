@@ -114,7 +114,9 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
       child: InkWell(
         onTap: () async {
-          final String roleCode = LocalStorages.getRole();
+          final String roleCode = LocalStorages.getRoleCode();
+          print('roleCode');
+          print(roleCode);
           await NavigateRoutes.toRoleSubmitScreen(roleCode, data);
         },
           child: Container(
