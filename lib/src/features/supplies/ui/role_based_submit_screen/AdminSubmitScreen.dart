@@ -338,7 +338,7 @@ class _AdminSubmitScreenState extends State<AdminSubmitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("$label:", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value),
           ],
@@ -511,10 +511,6 @@ class _AdminSubmitScreenState extends State<AdminSubmitScreen> {
       return false;
     }
 
-    if (inspectionRemarksController.text.trim().isEmpty) {
-      EasyLoading.showError('Please enter inspection remarks');
-      return false;
-    }
 
     if (selectedImages.isEmpty) {
       EasyLoading.showError('Please upload at least one QC image');

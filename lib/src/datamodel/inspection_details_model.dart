@@ -1,37 +1,25 @@
 class InspectionDetailsModel {
   MItem1? mItem1;
   List<MItem2>? mItem2;
-  List<MItem2>? mItem3; // Reusing MItem2 as structure is the same
+  List<MItem2>? mItem3; // Reusing MItem2 for both sections
 
   InspectionDetailsModel({this.mItem1, this.mItem2, this.mItem3});
 
   InspectionDetailsModel.fromJson(Map<String, dynamic> json) {
     mItem1 = json['m_Item1'] != null ? MItem1.fromJson(json['m_Item1']) : null;
     if (json['m_Item2'] != null) {
-      mItem2 = <MItem2>[];
-      json['m_Item2'].forEach((v) {
-        mItem2!.add(MItem2.fromJson(v));
-      });
+      mItem2 = List<MItem2>.from(json['m_Item2'].map((x) => MItem2.fromJson(x)));
     }
     if (json['m_Item3'] != null) {
-      mItem3 = <MItem2>[];
-      json['m_Item3'].forEach((v) {
-        mItem3!.add(MItem2.fromJson(v));
-      });
+      mItem3 = List<MItem2>.from(json['m_Item3'].map((x) => MItem2.fromJson(x)));
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    if (mItem1 != null) {
-      data['m_Item1'] = mItem1!.toJson();
-    }
-    if (mItem2 != null) {
-      data['m_Item2'] = mItem2!.map((v) => v.toJson()).toList();
-    }
-    if (mItem3 != null) {
-      data['m_Item3'] = mItem3!.map((v) => v.toJson()).toList();
-    }
+    if (mItem1 != null) data['m_Item1'] = mItem1!.toJson();
+    if (mItem2 != null) data['m_Item2'] = mItem2!.map((v) => v.toJson()).toList();
+    if (mItem3 != null) data['m_Item3'] = mItem3!.map((v) => v.toJson()).toList();
     return data;
   }
 }
@@ -49,13 +37,11 @@ class MItem1 {
     description = json['Description'];
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['ResponseCode'] = responseCode;
-    data['ResponseType'] = responseType;
-    data['Description'] = description;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'ResponseCode': responseCode,
+    'ResponseType': responseType,
+    'Description': description,
+  };
 }
 
 class MItem2 {
@@ -124,10 +110,8 @@ class MItem2 {
     refPKey = json['RefPKey'];
     qCApprovedQuantity = (json['QCApprovedQuantity'] as num?)?.toDouble();
     if (json['QCInspectionImages'] != null) {
-      qCInspectionImages = <QCInspectionImages>[];
-      json['QCInspectionImages'].forEach((v) {
-        qCInspectionImages!.add(QCInspectionImages.fromJson(v));
-      });
+      qCInspectionImages = List<QCInspectionImages>.from(
+          json['QCInspectionImages'].map((x) => QCInspectionImages.fromJson(x)));
     }
   }
 
@@ -153,8 +137,7 @@ class MItem2 {
     data['RefPKey'] = refPKey;
     data['QCApprovedQuantity'] = qCApprovedQuantity;
     if (qCInspectionImages != null) {
-      data['QCInspectionImages'] =
-          qCInspectionImages!.map((v) => v.toJson()).toList();
+      data['QCInspectionImages'] = qCInspectionImages!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -192,16 +175,14 @@ class QCInspectionImages {
     createdDate = json['CreatedDate'];
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['PKey'] = pKey;
-    data['RefPkey'] = refPkey;
-    data['ImagePath'] = imagePath;
-    data['ImageName'] = imageName;
-    data['ImageLatitude'] = imageLatitude;
-    data['ImageLongitude'] = imageLongitude;
-    data['ImageType'] = imageType;
-    data['CreatedDate'] = createdDate;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    'PKey': pKey,
+    'RefPkey': refPkey,
+    'ImagePath': imagePath,
+    'ImageName': imageName,
+    'ImageLatitude': imageLatitude,
+    'ImageLongitude': imageLongitude,
+    'ImageType': imageType,
+    'CreatedDate': createdDate,
+  };
 }

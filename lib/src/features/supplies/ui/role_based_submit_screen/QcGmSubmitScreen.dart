@@ -315,7 +315,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("$label:", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value),
           ],
@@ -340,13 +340,16 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
 
   Widget buildMergedDetailsCard() {
     final data = widget.data;
+    final int? lineItemRefPkey = data.refPkey;
 
+    // Filter MItem2 (Third Party Inspection) by RefPKey
     final mItem2Recs = supplierProvider.inspectionDetailRecords
-        .where((r) => r.purchaseOrderLineItemID == data.lineItemPKey)
+        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
         .toList();
 
+    // Filter MItem3 (Stores Inspection) by RefPKey
     final mItem3Recs = supplierProvider.inspectionDetailRecordsAdditional
-        .where((r) => r.purchaseOrderLineItemID == data.lineItemPKey)
+        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
         .toList();
 
     final record = mItem2Recs.isNotEmpty ? mItem2Recs.first : null;
@@ -359,7 +362,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge,),
+            Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity', '${data.quantity ?? '-'}'),
             _buildDoubleRow('Units', data.units ?? '-', 'Quantity to Inspect', '${data.quantitytoInspect ?? '-'}'),
@@ -368,22 +371,25 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
             _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 
+            /// THIRD PARTY INSPECTION
             if (record != null) ...[
               Text('Third Party Inspection Details', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               _buildInspectionSection(record),
             ] else ...[
-              const Text('No Third Party Inspection Details data available', style: TextStyle(color: Colors.grey)),
+              const Text('No Third Party Inspection Details available', style: TextStyle(color: Colors.grey)),
             ],
 
             const SizedBox(height: 20),
+
+            /// STORES INSPECTION
             if (additionalRecord != null) ...[
               Text('Stores Data Inspection Details', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               _buildStoresInspectionSection(additionalRecord),
             ] else ...[
-              const Text('No Stores Data Inspection Details data available', style: TextStyle(color: Colors.grey)),
-            ]
+              const Text('No Stores Data Inspection Details available', style: TextStyle(color: Colors.grey)),
+            ],
           ],
         ),
       ),
@@ -397,7 +403,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No', record.batchNo ?? '-'),
-        _buildDoubleRow('GM Readiness', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
+        _buildDoubleRow('Readiness Status', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
         _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate), 'Remarks', record.inspectionRemarks ?? '-'),
         _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity', record.qCApprovedQuantity?.toString() ?? '-'),
         _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Unit Type', record.unitType ?? '-'),
@@ -436,7 +442,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDoubleRow('Status', record.qCStatus ?? '-', 'Remarks', record.inspectionRemarks ??  '-'),
-        _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Approved Qty', record.qCApprovedQuantity?.toString() ?? '-'),
+        _buildRow1('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-'),
         if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
           const SizedBox(height: 10),
           const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -466,7 +472,20 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       ],
     );
   }
-
+  Widget _buildRow1(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,   // ✅ THIS IS IMPORTANT
+        children: [
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Flexible(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
   String _formatDate(String? rawDate) {
     if (rawDate == null || rawDate.isEmpty) return "-";
     try {
@@ -485,11 +504,6 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     if (selectedApprovalStatus == 'Rejected' &&
         inspectionRemarksController.text.trim().isEmpty) {
       EasyLoading.showError('Remarks are required for Rejected status');
-      return false;
-    }
-
-    if (inspectionRemarksController.text.trim().isEmpty) {
-      EasyLoading.showError('Please enter inspection remarks');
       return false;
     }
 

@@ -298,7 +298,7 @@ class _StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("$label:", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value),
           ],
@@ -322,11 +322,16 @@ class _StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
 
   Widget buildMergedDetailsCard() {
     final data = widget.data;
-    final recs = supplierProvider.inspectionDetailRecords
-        .where((r) => r.purchaseOrderLineItemID == data.lineItemPKey)
-        .toList();
-    final record = recs.isNotEmpty ? recs.first : null;
+    print("Line Item RefPkey: ${data.refPkey}");
+    print("Inspection Records Total: ${supplierProvider.inspectionDetailRecords.length}");
+    supplierProvider.inspectionDetailRecords.forEach((r) {
+      print("Inspection RefPKey: ${r.refPKey}, PO Line Item ID: ${r.purchaseOrderLineItemID}");
+    });
 
+    // Filter inspection records
+    final recs = supplierProvider.inspectionDetailRecords.where((r) =>
+    r.refPKey != null && data.refPkey != null && r.refPKey == data.refPkey
+    ).toList();
     return Card(
       margin: const EdgeInsets.all(12),
       child: Padding(
@@ -334,7 +339,7 @@ class _StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Purchase Order Details', style: Theme.of(context).textTheme.headlineSmall),
+            Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity', '${data.quantity ?? '-'}'),
             _buildDoubleRow('Units', data.units ?? '-', 'Quantity to Inspect', '${data.quantitytoInspect ?? '-'}'),
@@ -343,44 +348,60 @@ class _StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
             _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 
-            if (record != null) ...[
+            if (recs.isNotEmpty) ...[
               Text('Third Party Inspection Details', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 10),
-              _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No', record.batchNo ?? '-'),
-              _buildDoubleRow('GM Readiness', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
-              _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate), 'Remarks', record.inspectionRemarks ?? '-'),
-              _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity', record.qCApprovedQuantity?.toString() ?? '-'),
-              _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Unit Type', record.unitType ?? '-'),
-              _buildDoubleRow('HSM No', record.hSMNo ?? '-', '', ''),
-              if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
-                const SizedBox(height: 10),
-                const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 6),
-                SizedBox(
-                  height: 100,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: record.qCInspectionImages!.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (ctx, i) {
-                      final img = record.qCInspectionImages![i];
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          img.imagePath ?? '',
-                          width: 100,
+
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: recs.length,
+                separatorBuilder: (_, __) => const Divider(),
+                itemBuilder: (ctx, index) {
+                  final record = recs[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No', record.batchNo ?? '-'),
+                      _buildDoubleRow('Readiness Status', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
+                      _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate), 'Remarks', record.inspectionRemarks ?? '-'),
+                      _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity', record.qCApprovedQuantity?.toString() ?? '-'),
+                      _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Unit Type', record.unitType ?? '-'),
+                      _buildDoubleRow('HSM No', record.hSMNo ?? '-', '', ''),
+
+                      if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 10),
+                        const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        SizedBox(
                           height: 100,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: record.qCInspectionImages!.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (ctx, i) {
+                              final img = record.qCInspectionImages![i];
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  img.imagePath ?? '',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ]
+                      ],
+                    ],
+                  );
+                },
+              ),
             ] else ...[
-              Text('No inspection data available', style: TextStyle(color: Colors.grey)),
-            ]
+              const Text('No inspection data available for this line item', style: TextStyle(color: Colors.grey)),
+            ],
           ],
         ),
       ),
@@ -405,11 +426,6 @@ class _StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
     if (selectedApprovalStatus == 'Rejected' &&
         inspectionRemarksController.text.trim().isEmpty) {
       EasyLoading.showError('Remarks are required for Rejected status');
-      return false;
-    }
-
-    if (inspectionRemarksController.text.trim().isEmpty) {
-      EasyLoading.showError('Please enter inspection remarks');
       return false;
     }
 
