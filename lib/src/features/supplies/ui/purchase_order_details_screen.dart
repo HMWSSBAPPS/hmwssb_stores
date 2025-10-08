@@ -1,16 +1,8 @@
 
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/AdminSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcDgmSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcGmSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/QcManagerSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreDgmSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreGmSubmitScreen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/StoreManagerSubmitScreen.dart';
 
 import '../../../../common_imports.dart';
 import '../../../datamodel/items_by_purchase_order_number.dart';
-import 'file_tapped_view_screen.dart';
 import 'package:intl/intl.dart';
 
 

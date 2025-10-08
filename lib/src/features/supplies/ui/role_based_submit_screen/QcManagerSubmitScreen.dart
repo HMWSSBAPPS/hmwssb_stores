@@ -1,7 +1,6 @@
 // Imports
 import 'dart:io';
 import 'dart:convert';
-import 'package:file_picker/file_picker.dart';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:intl/intl.dart';

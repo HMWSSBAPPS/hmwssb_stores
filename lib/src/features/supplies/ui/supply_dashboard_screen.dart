@@ -1,7 +1,6 @@
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:hmwssb_stores/src/features/supplies/ui/purchase_order_details_screen.dart';
-import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/store_manager_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../common_imports.dart';
 import '../../widgets/global_app_bar.dart';

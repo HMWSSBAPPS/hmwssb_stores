@@ -9,8 +9,6 @@ import '../../../core/network/network_index.dart';
 import '../../../datamodel/login_model.dart';
 import '../../../datamodel/userRole_model.dart';
 import '../../../../common_imports.dart';
-import '../../supplies/ui/roles_based_screen/store_manager_screen.dart';
-import '../../supplies/ui/supply_dashboard_screen.dart';
 
 class LoginProvider extends ChangeNotifier {
   double appVersion = 0.0;
