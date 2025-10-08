@@ -19,10 +19,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      home: MultiProvider(
+    // final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+    return MultiProvider(
         // ignore: always_specify_types
           providers: [
             ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
@@ -50,7 +48,7 @@ class MyApp extends StatelessWidget {
                       );
                     },
                   ),
-                  home: const SplashScreen()))),
+                  home: const SplashScreen()))
     );
   }
 }
