@@ -120,11 +120,6 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     final double? approvedQuantity = double.tryParse(approvedQuantityController.text.trim());
     final double? quantity = widget.data.quantity?.toDouble();
 
-    if (selectedApprovalStatus == "Rejected" && (approvedQuantity == null || approvedQuantity != 0)) {
-      EasyLoading.showError('Approved Quantity must be 0 because QC Status is Rejected.');
-      return;
-    }
-
     final String wingType = LocalStorages.getWingId();
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
       purchaseOrderID: supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
@@ -364,10 +359,10 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
           children: [
             Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity', '${data.quantity ?? '-'}'),
-            _buildDoubleRow('Units', data.units ?? '-', 'Quantity to Inspect', '${data.quantitytoInspect ?? '-'}'),
-            _buildDoubleRow('Units Rate', data.unitsRate?.toString() ?? '-', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Agreement No', data.agreementNo ?? '-', 'Agreement Date', _formatDate(data.agreementDate)),
+            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
+            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate', data.unitsRate?.toString() ?? '-'),
+            _buildDoubleRow('Quantity to Inspect', '${data.quantitytoInspect ?? '-'}', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 
@@ -442,7 +437,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDoubleRow('Status', record.qCStatus ?? '-', 'Remarks', record.inspectionRemarks ??  '-'),
-        _buildRow1('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-'),
+        //_buildRow1('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-'),
         if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
           const SizedBox(height: 10),
           const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),

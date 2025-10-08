@@ -82,9 +82,16 @@ class _ApiCallTypes {
       // required String password,
       // }
       ) {
-    String username = 'edp';
-    //String password = 'U2FsdGVkX19ZonFiPxqywPI8fJuoFKh270UZEhenTxU=';
-     String password = 'Navayuga123';
+
+    ///Staging
+    // String username = 'edp';
+    // //String password = 'U2FsdGVkX19ZonFiPxqywPI8fJuoFKh270UZEhenTxU=';
+    //  String password = 'Navayuga123';
+
+     ////Live
+    String username = 'selfbilling';
+    String password = 'XklLh/eaJmWq937pJu2hBB9nvKVeqYirS1WbwDpHK+U=';
+
     final Map<String, String> headers = <String, String>{
       postHeaderKey: postHeaderValue,
     };

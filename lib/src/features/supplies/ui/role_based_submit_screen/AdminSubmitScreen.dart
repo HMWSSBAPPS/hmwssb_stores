@@ -128,14 +128,14 @@ class _AdminSubmitScreenState extends State<AdminSubmitScreen> {
     final double? quantity =
     widget.data.quantity?.toDouble(); // ✅ Instead of provider
 
-    if (selectedApprovalStatus == "Rejected") {
-      // Treat both empty or non-zero values as invalid
-      if (approvedQuantity == null || approvedQuantity != 0) {
-        EasyLoading.showError(
-            'Approved Quantity must be 0 because QC Status is Rejected.');
-        return;
-      }
-    }
+    // if (selectedApprovalStatus == "Rejected") {
+    //   // Treat both empty or non-zero values as invalid
+    //   if (approvedQuantity == null || approvedQuantity != 0) {
+    //     EasyLoading.showError(
+    //         'Approved Quantity must be 0 because QC Status is Rejected.');
+    //     return;
+    //   }
+    // }
     final String wingType = LocalStorages.getWingId();
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
       purchaseOrderID:
@@ -384,10 +384,10 @@ class _AdminSubmitScreenState extends State<AdminSubmitScreen> {
           children: [
             Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge,),
             const SizedBox(height: 12),
-            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity', '${data.quantity ?? '-'}'),
-            _buildDoubleRow('Units', data.units ?? '-', 'Quantity to Inspect', '${data.quantitytoInspect ?? '-'}'),
-            _buildDoubleRow('Units Rate', data.unitsRate?.toString() ?? '-', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Agreement No', data.agreementNo ?? '-', 'Agreement Date', _formatDate(data.agreementDate)),
+            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
+            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate', data.unitsRate?.toString() ?? '-'),
+            _buildDoubleRow('Quantity to Inspect', '${data.quantitytoInspect ?? '-'}', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 

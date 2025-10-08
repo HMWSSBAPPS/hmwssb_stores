@@ -14,6 +14,7 @@ import 'file_tapped_view_screen.dart';
 import 'package:intl/intl.dart';
 
 
+
 class PurchaseOrderDetailsScreen extends StatefulWidget {
   const PurchaseOrderDetailsScreen({super.key});
 
@@ -22,12 +23,12 @@ class PurchaseOrderDetailsScreen extends StatefulWidget {
 }
 
 class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen> {
-
   @override
   void initState() {
     super.initState();
     debugPrint('🟢 Screen Loaded: PurchaseOrderDetailsScreen');
   }
+
   @override
   Widget build(BuildContext context) {
     return CommonAppBar(
@@ -37,14 +38,11 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
             return const SizedBox.shrink();
           }
 
-          final String? searchText =
-          provider.ItemNameController.text.trim().toLowerCase();
+          final String? searchText = provider.ItemNameController.text.trim().toLowerCase();
 
-          // Filter list based on the search input
           final List<ItemsByPurchaseOrderModel> filteredList = searchText!.isNotEmpty
               ? provider.itemByPurchaseOrderList.where((ItemsByPurchaseOrderModel element) {
-            final String fileNumber =
-            (element.itemName ?? '').toLowerCase();
+            final String fileNumber = (element.itemName ?? '').toLowerCase();
             return fileNumber.contains(searchText);
           }).toList()
               : provider.itemByPurchaseOrderList;
@@ -57,14 +55,11 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                   child: CustomTextFormField(
                     controller: provider.ItemNameController,
                     focusNode: provider.ItemNameFocusNode,
-                    labelText:
-                    'Enter Item Name',
+                    labelText: 'Enter Item Name',
                     onChanged: (String val) {
                       provider.notifyToAllValues();
                     },
-                    inputFormatters: <TextInputFormatter>[
-                      LengthLimitingTextInputFormatter(30)
-                    ],
+                    inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(30)],
                     suffixIcon: searchText.isEmpty
                         ? const Icon(Icons.search)
                         : IconButton(
@@ -72,10 +67,7 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                         provider.ItemNameController.clear();
                         provider.notifyToAllValues();
                       },
-                      icon: const Icon(
-                        Icons.cancel_outlined,
-                        color: ThemeColors.orangeColor,
-                      ),
+                      icon: const Icon(Icons.cancel_outlined, color: ThemeColors.orangeColor),
                     ),
                   ),
                 ),
@@ -105,62 +97,58 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
     );
   }
 
-  //? Custom File Card
-  Widget _customFileCard({
-    required BuildContext context,
-    required ItemsByPurchaseOrderModel data,
-  }) {
+  Widget _customFileCard({required BuildContext context, required ItemsByPurchaseOrderModel data}) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
       child: InkWell(
         onTap: () async {
           final String roleCode = LocalStorages.getRoleCode();
-          print('roleCode');
-          print(roleCode);
           await NavigateRoutes.toRoleSubmitScreen(roleCode, data);
         },
-          child: Container(
-            decoration: BoxDecoration(
-                color: ThemeColors.whiteColor,
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: ThemeColors.primaryColor),
-                boxShadow: const <BoxShadow>[
-                  BoxShadow(
-                    color: ThemeColors.primaryColor,
-                    offset: Offset(0.5, 0.5),
-                  ),
-                  BoxShadow(
-                    color: ThemeColors.primaryColor,
-                    offset: Offset(-0.5, -0.5),
-                  )
-                ]),
-            child: Column(children: <Widget>[
+        child: Container(
+          decoration: BoxDecoration(
+            color: ThemeColors.whiteColor,
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(color: ThemeColors.primaryColor),
+            boxShadow: const <BoxShadow>[
+              BoxShadow(color: ThemeColors.primaryColor, offset: Offset(0.5, 0.5)),
+              BoxShadow(color: ThemeColors.primaryColor, offset: Offset(-0.5, -0.5))
+            ],
+          ),
+          child: Column(
+            children: <Widget>[
               Row(
                 children: <Widget>[
-                  Expanded(
-                      child: Padding(
-                          padding: const EdgeInsets.only(left: 8.0, top: 8.0),
-                          child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Expanded(
-                                  child: CustomText(
-                                      writtenText: 'Item Name',
-                                      textStyle: ThemeTextStyle.style(
-                                        fontWeight: FontWeight.normal,
-                                      )),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: CustomText(
-                                      writtenText:
-                                      '   : ${data.itemName ?? Constants.empty}',
-                                      textStyle: ThemeTextStyle.style(
-                                        color: ThemeColors.blueColor,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                )
-                              ]))),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+                    child: _customLabelBodyText(context: context, label: 'Agreement No.', body: data.agreementNo,),
+                  )),
+                  // Expanded(
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+                  //     child: Row(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       children: <Widget>[
+                  //         Expanded(
+                  //           child: CustomText(
+                  //             writtenText: 'Item Name',
+                  //             textStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
+                  //           ),
+                  //         ),
+                  //         Expanded(
+                  //           flex: 2,
+                  //           child: CustomText(
+                  //             writtenText: ': ${data.itemName ?? Constants.empty}',
+                  //             textStyle: ThemeTextStyle.style(
+                  //               color: ThemeColors.blueColor,
+                  //               fontWeight: FontWeight.w600,
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                   Container(
                     decoration: const BoxDecoration(
                       color: ThemeColors.primaryColor,
@@ -172,9 +160,9 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                       child: CustomText(
-                          writtenText: data.readyNessStatus ?? Constants.empty,
-                          textStyle: ThemeTextStyle.style(
-                              color: ThemeColors.whiteColor)),
+                        writtenText: data.readyNessStatus ?? Constants.empty,
+                        textStyle: ThemeTextStyle.style(color: ThemeColors.whiteColor),
+                      ),
                     ),
                   ),
                 ],
@@ -184,97 +172,53 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                 child: Column(
                   children: <Widget>[
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Proposed Quantity',
-                      body: data.quantity.toString(),
-                    ),
-                    // 8.ph,
-                    // _customLabelBodyText(
-                    //   context: context,
-                    //   label: 'Pipe Size',
-                    //   body: data.pipeSize,
-                    // ),
-                    // 8.ph,
-                    // _customLabelBodyText(
-                    //   context: context,
-                    //   label: 'Type',
-                    //   body: data.type,
-                    // ),
+                    _customLabelBodyText(context: context, label: 'Agreement Date', body: _formatDate(data.agreementDate)),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Units',
-                      body: data.units,
-                    ),
+                    _customLabelBodyText(context: context, label: 'Item Name', body: data.itemName ?? Constants.empty),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Quantity To Inspect',
-                      body: data.quantitytoInspect.toString(),
-                    ),
+                    _customLabelBodyText(context: context, label: 'Proposed Qty for Inspection', body: data.quantity.toString()),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Units Rate',
-                      body: data.unitsRate.toString(),
-                    ),
+                    _customLabelBodyText(context: context, label: 'Unit', body: data.units),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'SLA Date',
-                      body: _formatDate(data.slaDate),
-                    ),
+                    _customLabelBodyText(context: context, label: 'Unit Rate', body: data.unitsRate.toString()),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Agreement No',
-                      body: data.agreementNo.toString(),
-                    ),
+                    _customLabelBodyText(context: context, label: 'Qty to Inspect', body: data.quantitytoInspect.toString()),
                     8.ph,
-                    _customLabelBodyText(
-                      context: context,
-                      label: 'Agreement Date',
-                      body: _formatDate(data.agreementDate),
-                    ),
-                    12.ph,
+                    _customLabelBodyText(context: context, label: 'SLA Date', body: _formatDate(data.slaDate)),
                   ],
                 ),
               ),
-            ])),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  //? Custom label Body text
-  Widget _customLabelBodyText({
-    required BuildContext context,
-    required String label,
-    required String? body,
-  }) {
+  Widget _customLabelBodyText({required BuildContext context, required String label, required String? body}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(
+        IntrinsicWidth(
           child: CustomText(
-              writtenText: label,
-              textStyle: ThemeTextStyle.style(
-                fontWeight: FontWeight.normal,
-              )),
+            writtenText: label,
+            textStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
+
+          ),
         ),
         CustomText(
-            writtenText: ' : ',
-            textStyle: ThemeTextStyle.style(
-              fontWeight: FontWeight.normal,
-            )),
+          writtenText: ' : ',
+          textStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
+        ),
         Expanded(
           flex: 2,
           child: CustomText(
-              writtenText: body ?? Constants.hypenSymbol,
-              textStyle: ThemeTextStyle.style(
-                color: ThemeColors.blueColor,
-                fontWeight: FontWeight.w600,
-              )),
+            writtenText: body ?? Constants.hypenSymbol,
+            textStyle: ThemeTextStyle.style(
+              color: ThemeColors.blueColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
@@ -287,6 +231,7 @@ String _formatDate(String? date) {
     final DateTime parsedDate = DateTime.parse(date);
     return DateFormat('dd-MM-yyyy').format(parsedDate);
   } catch (e) {
-    return Constants.hypenSymbol; // Return hyphen if parsing fails
+    return Constants.hypenSymbol;
   }
 }
+

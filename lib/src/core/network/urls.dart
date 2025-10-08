@@ -2,8 +2,8 @@
 
 class AppUrls {
   static const String baseUrl =
-  // 'https://erp.hyderabadwater.gov.in/SWCFeasibilityMobileAppAPI';
-      'https://test3.hyderabadwater.gov.in/HMWSSBAPI';
+   'https://local.hyderabadwater.gov.in/HMWSSBAPI';
+        //'https://test3.hyderabadwater.gov.in/HMWSSBAPI';
 
   static const String getVersionUrl = '$baseUrl/GetLatestVersionNoForStoresApp';
   static const String getLoginOTPExternalUrl = '$baseUrl/SendLoginOTPExternal';

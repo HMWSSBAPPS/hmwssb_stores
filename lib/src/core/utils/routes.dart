@@ -45,6 +45,9 @@ class NavigateRoutes {
         case 'STGM':
           toStoreGmScreen();
           break;
+        case 'STCGM':
+          toStoreGmScreen();
+          break;
         case 'STDGM':
           toStoreDGMScreen();
           break;
@@ -54,6 +57,9 @@ class NavigateRoutes {
         case 'QCGM': printDebug("object it went inside this $roleCode");
           toQCGMScreen();
           break;
+        case 'QCCGM': printDebug("object it went inside this $roleCode");
+        toQCGMScreen();
+        break;
         case 'QCDGM':
           toQCDGMScreen();
           break;

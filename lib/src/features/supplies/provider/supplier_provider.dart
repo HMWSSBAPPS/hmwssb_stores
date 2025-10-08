@@ -202,8 +202,9 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
 
       final int userId = LocalStorages.getUserId();
       final String wingType = LocalStorages.getWingId();
+      final String? poId = selectedPurchaseOrderListBySupplies?.pkey?.toString();
 
-      if (userId == 0 || wingType.isEmpty) {
+      if (userId == 0 || wingType.isEmpty || poId == null || poId.isEmpty) {
         EasyLoading.showError("User ID, Wing or POID is missing.");
         isLoadData(false);
         notifyToAllValues();

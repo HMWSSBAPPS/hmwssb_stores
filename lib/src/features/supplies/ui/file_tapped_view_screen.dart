@@ -105,12 +105,10 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
   Future<void> _submitForm() async {
     DateTime? inspectionDate;
     DateTime? manufactureDate;
+
     printDebug("Final Manufacture Date Sent: $selectedYearOfManufacturerAPI");
 
-    // if (selectedYearOfManufacturerAPI == null || selectedYearOfManufacturerAPI!.isEmpty) {
-    //   EasyLoading.showError('Manufacture Date is mandatory');
-    //   return;
-    // }
+    // === Step 1: Date Validations ===
     if (selectedDateOfQCInspectionAPI != null &&
         selectedDateOfQCInspectionAPI!.isNotEmpty) {
       inspectionDate = DateTime.tryParse(selectedDateOfQCInspectionAPI!);
@@ -128,21 +126,43 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         return;
       }
 
-      if (inspectionDate != null) {
-        if (inspectionDate.isBefore(manufactureDate)) {
-          EasyLoading.showError(
-              'QC Inspection Date should be greater than or equal to the Manufacturing Date.');
-          return;
-        }
+      if (inspectionDate != null && inspectionDate.isBefore(manufactureDate)) {
+        EasyLoading.showError(
+            'QC Inspection Date should be greater than or equal to the Manufacturing Date.');
+        return;
       }
     }
 
+    // === Step 2: Remarks Required If Rejected ===
     if (selectedApprovalStatus == "Rejected" &&
         inspectionRemarksController.text.trim().isEmpty) {
       EasyLoading.showError('Inspection Remarks are required for rejected QC.');
       return;
     }
 
+    // === Step 3: Approved Quantity Validations ===
+    final String approvedQtyText = approvedQuantityController.text.trim();
+    final double? approvedQuantity = double.tryParse(approvedQtyText);
+    final double? quantity = widget.data.quantity?.toDouble();
+
+    if (selectedApprovalStatus == "Rejected") {
+      // If rejected, Approved Quantity must be exactly 0
+      if (approvedQuantity == null || approvedQuantity != 0) {
+        EasyLoading.showError(
+            'Approved Quantity must be 0 because QC Status is Rejected.');
+        return;
+      }
+    } else {
+      // For Approved or other statuses: Approved Quantity must not exceed Proposed Quantity
+      if (quantity != null && approvedQuantity != null && approvedQuantity > quantity) {
+        EasyLoading.showError(
+            'Approved Quantity cannot be greater than the Proposed Quantity.');
+        return;
+      }
+    }
+
+
+    // === Step 4: Prepare Images for Upload ===
     List<QCInspectionImages> imagesList = selectedImages.map((image) {
       return QCInspectionImages(
         appName: "STORESAPP",
@@ -153,38 +173,12 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         base64Image: base64Encode(File(image.path).readAsBytesSync()),
       );
     }).toList();
-    final String approvedQtyText = approvedQuantityController.text.trim();
-    final double? approvedQuantity = double.tryParse(approvedQtyText);
-    final double? quantity =
-        widget.data.quantity?.toDouble(); // ✅ Instead of provider
 
-    if (selectedApprovalStatus == "Rejected") {
-      // Treat both empty or non-zero values as invalid
-      if (approvedQuantity == null || approvedQuantity != 0) {
-        EasyLoading.showError(
-            'Approved Quantity must be 0 because QC Status is Rejected.');
-        return;
-      }
-    } else {
-      if (approvedQtyText.isEmpty) {
-        EasyLoading.showError('Approved Quantity is required.');
-        return;
-      }
-      if (approvedQuantity == null) {
-        EasyLoading.showError('Approved Quantity must be a valid number.');
-        return;
-      }
-      if (quantity != null && approvedQuantity > quantity) {
-        EasyLoading.showError(
-            'Approved Quantity cannot be greater than the Proposed Quantity.');
-        return;
-      }
-    }
     final String wingType = LocalStorages.getWingId();
-    SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
 
+    SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
       purchaseOrderID:
-          supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
+      supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
       purchaseOrderLineItemID: widget.data.lineItemPKey,
       quantity: quantity,
       qCApprovedQuantity: approvedQuantity,
@@ -206,14 +200,14 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       uploadDocBase64: uploadedFileBase64 ?? '',
       qCInspectionImages: imagesList,
     );
-    // printDebug(
-    //     'Encoded base64 starts with: ${uploadedFileBase64?.substring(0, 30)}');
 
-    //printDebug("Submitted Data: ${postData.toJson()}");
     printDebug("Submitted Data2: ${postData.inspectionLevel}");
+
+    // === Step 5: API Call ===
     await supplierProvider.postIMSQInspectDetailsApiCall(
         postData, supplierProvider);
   }
+
 
   // Image picker, calendar selection, etc., remain the same
   Future<void> _captureImage() async {

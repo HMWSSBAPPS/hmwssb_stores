@@ -195,7 +195,7 @@ class LoginScreenWidget extends StatelessWidget {
 
                                 await LocalStorages.saveUserData(
                                     localSaveType: LocalSaveType.userid,
-                                    value: loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.userID);
+                                    value: loginProvider.loggedInUserData?.rolesInfo?.first.userID ?? '');
 
                                 printDebug("Saved UserID: ${loginProvider.loggedInUserData?.rolesInfo?.firstOrNull?.userID}");
 

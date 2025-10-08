@@ -28,7 +28,10 @@ class LoginProvider extends ChangeNotifier {
   final FocusNode newPasswordFocusNode = FocusNode();
   final TextEditingController confirmPasswordController = TextEditingController();
   final FocusNode confirmPasswordFocusNode = FocusNode();
-
+  String get userId => LocalStorages.getUserId().toString();
+  String get wingId => LocalStorages.getWingId();
+  String get roleCode => LocalStorages.getRoleCode();
+  String get selectedRoleName => LocalStorages.getSelectedRoleName();
   MItem2? loggedInUserData;
   bool isUserExist = false;
   String getApiOtp = Constants.empty;

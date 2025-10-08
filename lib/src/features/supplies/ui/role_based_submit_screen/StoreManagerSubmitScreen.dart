@@ -262,10 +262,10 @@ class _StoreManagerSubmitScreenState extends State<StoreManagerSubmitScreen> {
           children: [
             Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity', '${data.quantity ?? '-'}'),
-            _buildDoubleRow('Units', data.units ?? '-', 'Quantity to Inspect', '${data.quantitytoInspect ?? '-'}'),
-            _buildDoubleRow('Units Rate', data.unitsRate?.toString() ?? '-', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Agreement No', data.agreementNo ?? '-', 'Agreement Date', _formatDate(data.agreementDate)),
+            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
+            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate', data.unitsRate?.toString() ?? '-'),
+            _buildDoubleRow('Quantity to Inspect', '${data.quantitytoInspect ?? '-'}', 'SLA Date', _formatDate(data.slaDate)),
             _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 
