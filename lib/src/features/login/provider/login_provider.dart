@@ -20,11 +20,13 @@ class LoginProvider extends ChangeNotifier {
   final TextEditingController otpController = TextEditingController();
   final FocusNode otpFocusNode = FocusNode();
 
-  final TextEditingController currentPasswordController = TextEditingController();
+  final TextEditingController currentPasswordController =
+      TextEditingController();
   final FocusNode currentPasswordFocusNode = FocusNode();
   final TextEditingController newPasswordController = TextEditingController();
   final FocusNode newPasswordFocusNode = FocusNode();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final FocusNode confirmPasswordFocusNode = FocusNode();
   String get userId => LocalStorages.getUserId().toString();
   String get wingId => LocalStorages.getWingId();
@@ -62,7 +64,6 @@ class LoginProvider extends ChangeNotifier {
 
   void notifyToAllValues() => safeNotifyListeners();
 
-
   void setAppVersion(double version) {
     appVersion = version;
     notifyToAllValues();
@@ -70,7 +71,7 @@ class LoginProvider extends ChangeNotifier {
 
   void isLoadData(bool loading) {
     isLoading = loading;
-   // safeNotifyListeners();
+    // safeNotifyListeners();
   }
 
   void startTimer() {
@@ -115,8 +116,8 @@ class LoginProvider extends ChangeNotifier {
 //   List<UserRoleModel> get roles => userRoleList;
 //   UserRoleModel? get selectedRole => selectedUserRole;
 
-  List<Map<String, String>> loginUserRolesMap=[];
-  Map<String, String> selectedRole={};
+  List<Map<String, String>> loginUserRolesMap = [];
+  Map<String, String> selectedRole = {};
 
   Future<void> selectRole() async {
     loginUserRolesMap.clear();
@@ -130,18 +131,20 @@ class LoginProvider extends ChangeNotifier {
       return;
     }
 
-    loginUserRolesMap = rolesInfo.map((e) => {
-      "userID": "${e.userID}",
-      "wingType": "${e.wingType}",
-      "roleName": "${e.roleName}",
-      "roleCode": "${e.roleCode}",
-    }).toList();
+    loginUserRolesMap = rolesInfo
+        .map((e) => {
+              "userID": "${e.userID}",
+              "wingType": "${e.wingType}",
+              "roleName": "${e.roleName}",
+              "roleCode": "${e.roleCode}",
+            })
+        .toList();
 
     if (loginUserRolesMap.isNotEmpty) {
       // Only restore if a saved role exists
       if (savedRoleName != null && savedRoleName.isNotEmpty) {
         selectedRole = loginUserRolesMap.firstWhere(
-              (role) => role['roleName'] == savedRoleName,
+          (role) => role['roleName'] == savedRoleName,
           orElse: () => loginUserRolesMap.first,
         );
       } else {
@@ -174,10 +177,6 @@ class LoginProvider extends ChangeNotifier {
 
     notifyToAllValues();
   }
-
-
-
-
 
   // void selectRole()async{
   //   loginUserRolesMap=[];
@@ -243,7 +242,9 @@ class LoginProvider extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      final responseBody = response.body is Map<String, dynamic> ? response.body : jsonDecode(response.body);
+      final responseBody = response.body is Map<String, dynamic>
+          ? response.body
+          : jsonDecode(response.body);
       LoginUserModel loginUserModel = LoginUserModel.fromJson(responseBody);
       final mItem2 = loginUserModel.mItem2;
       final otp = mItem2?.oTP ?? '';
@@ -254,9 +255,14 @@ class LoginProvider extends ChangeNotifier {
         loggedInUserData = mItem2;
         startTimer();
 
-        await LocalStorages.saveUserData(localSaveType: LocalSaveType.userid, value: mItem2?.rolesInfo?.first.userID);
-        await LocalStorages.saveUserData(localSaveType: LocalSaveType.wingid, value: mItem2?.rolesInfo?.first.wingType ?? '');
-        await LocalStorages.saveUserData(localSaveType: LocalSaveType.fullUserData, value: mItem2);
+        await LocalStorages.saveUserData(
+            localSaveType: LocalSaveType.userid,
+            value: mItem2?.rolesInfo?.first.userID);
+        await LocalStorages.saveUserData(
+            localSaveType: LocalSaveType.wingid,
+            value: mItem2?.rolesInfo?.first.wingType ?? '');
+        await LocalStorages.saveUserData(
+            localSaveType: LocalSaveType.fullUserData, value: mItem2);
 
         await getUserRoleListApiCall();
         EasyLoading.showSuccess(ConstantMessage.otpSentSuccessfully);
@@ -286,25 +292,25 @@ class LoginProvider extends ChangeNotifier {
     }
 
     final matchedRole = userRoleList.firstWhere(
-          (role) => roleCodesFromLogin.contains(role.roleCode),
+      (role) => roleCodesFromLogin.contains(role.roleCode),
       orElse: () => UserRoleModel(),
     );
 
-
     final matchedLoginRole = loginUser.rolesInfo?.firstWhere(
-          (roleInfo) => roleInfo.roleCode == matchedRole.roleCode,
+      (roleInfo) => roleInfo.roleCode == matchedRole.roleCode,
       orElse: () => RolesInfo(),
     );
-
 
     if (matchedRole.roleCode != null && matchedRole.roleCode!.isNotEmpty) {
       selectedUserRole = matchedRole;
 
-      await LocalStorages.saveUserData(localSaveType: LocalSaveType.role, value: matchedRole.roleCode);
-      await LocalStorages.saveUserData(localSaveType: LocalSaveType.wingid, value: matchedLoginRole?.wingType ?? '');
+      await LocalStorages.saveUserData(
+          localSaveType: LocalSaveType.role, value: matchedRole.roleCode);
+      await LocalStorages.saveUserData(
+          localSaveType: LocalSaveType.wingid,
+          value: matchedLoginRole?.wingType ?? '');
 
       navigateToRoleScreen(matchedRole.roleCode!);
-
     } else {
       EasyLoading.showInfo('No matching role found');
     }
@@ -376,9 +382,14 @@ class LoginProvider extends ChangeNotifier {
     if (response.statusCode == 200) {
       double responseVersion = double.tryParse(response.body ?? '0') ?? 0.0;
       if (responseVersion > version) {
-        EasyLoading.showInfo('App Update Required');
+        await EasyLoading.showInfo('App Update Required',
+            duration: const Duration(seconds: 5));
         if (Platform.isAndroid) {
-          Utils.launchInBrowser(Uri.parse("https://play.google.com/store/apps/details?id=com.hmwssb_swc"));
+          await Utils.launchInBrowser(Uri.parse(
+              "https://play.google.com/store/apps/details?id=com.hmwssb_stores"));
+        }
+        if (Platform.isIOS) {
+          // await Utils.launchInBrowser(Uri.parse("https://apps.apple.com/us/app/hmwssb-stores/id6448606970"));
         }
         return false;
       }

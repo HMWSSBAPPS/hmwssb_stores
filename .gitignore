@@ -53,3 +53,7 @@ android/app/.cxx/
 ios/Flutter/ephemeral/
 ios/.symlinks/
 ios/build/
+
+# --- ALLOW ONLY KEY FILES TO BE TRACKED ---
+!android/playConsole.jks
+!android/password.txt

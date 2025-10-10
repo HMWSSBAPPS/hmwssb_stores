@@ -35,7 +35,8 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
       await supplierProvider.getSupplierDetailsListApiCall(loginProvider);
 
       if (supplierProvider.supplierDetailsList.isNotEmpty) {
-        supplierProvider.selectedSupplierDetails = supplierProvider.supplierDetailsList.first;
+        supplierProvider.selectedSupplierDetails =
+            supplierProvider.supplierDetailsList.first;
       }
     }
   }
@@ -82,7 +83,8 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
                 textStyle: ThemeTextStyle.style(color: ThemeColors.whiteColor),
               ),
             ),
-            if (widget.showRoleDropdown && loginProvider.loginUserRolesMap.isNotEmpty)
+            if (widget.showRoleDropdown &&
+                loginProvider.loginUserRolesMap.isNotEmpty)
               Consumer<LoginProvider>(
                 builder: (context, loginProvider, _) {
                   final selectedValue = loginProvider.selectedRole['roleName'];
@@ -93,39 +95,45 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
 
                   return DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      dropdownColor: Colors.black,
-                      iconEnabledColor: Colors.white,
-                      style: const TextStyle(color: Colors.white),
-                      value: roleNames.contains(selectedValue) ? selectedValue : null,
-                      items: roleNames.map((roleName) {
-                        return DropdownMenuItem<String>(
-                          value: roleName,
-                          child: Text(roleName, style: ThemeTextStyle.style(fontSize: 14, color: Colors.white)),
-                        );
-                      }).toList(),
+                        dropdownColor: Colors.black,
+                        iconEnabledColor: Colors.white,
+                        style: const TextStyle(color: Colors.white),
+                        value: roleNames.contains(selectedValue)
+                            ? selectedValue
+                            : null,
+                        items: roleNames.map((roleName) {
+                          return DropdownMenuItem<String>(
+                            value: roleName,
+                            child: Text(roleName,
+                                style: ThemeTextStyle.style(
+                                    fontSize: 14, color: Colors.white)),
+                          );
+                        }).toList(),
                         onChanged: (selectedRoleName) async {
-                          final selectedMap = loginProvider.loginUserRolesMap.firstWhere(
-                                (e) => e['roleName'] == selectedRoleName,
+                          final selectedMap =
+                              loginProvider.loginUserRolesMap.firstWhere(
+                            (e) => e['roleName'] == selectedRoleName,
                             orElse: () => {},
                           );
 
                           print('selectedMap');
                           print(selectedMap);
-                          await loginProvider.saveSelectedRoleLocally(selectedMap);
+                          await loginProvider
+                              .saveSelectedRoleLocally(selectedMap);
 
-                          await supplierProvider.getSupplierDetailsListApiCall(loginProvider);
+                          await supplierProvider
+                              .getSupplierDetailsListApiCall(loginProvider);
 
                           if (supplierProvider.supplierDetailsList.isNotEmpty) {
-                            supplierProvider.selectedSupplierDetails = supplierProvider.supplierDetailsList.first;
+                            supplierProvider.selectedSupplierDetails =
+                                supplierProvider.supplierDetailsList.first;
                           }
 
                           setState(() {}); // Refresh the app bar
 
-                          NavigateRoutes.toRoleScreen(selectedMap['roleCode'] ?? '');
-                        }
-
-
-                    ),
+                          NavigateRoutes.toRoleScreen(
+                              selectedMap['roleCode'] ?? '');
+                        }),
                   );
                 },
               ),
