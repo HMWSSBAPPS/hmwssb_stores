@@ -2,23 +2,23 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
-import '../../../../common_imports.dart';
-import '../../../datamodel/items_by_purchase_order_number.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-import '../../../datamodel/save_imsqc_inspection_details.dart'; // For gallery and zoom
+import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart'; // For gallery and zoom
 
 class FileViewTappedScreen extends StatefulWidget {
   const FileViewTappedScreen({required this.data, super.key});
   final ItemsByPurchaseOrderModel data;
 
   @override
-  _FileViewTappedScreenState createState() => _FileViewTappedScreenState();
+  FileViewTappedScreenState createState() => FileViewTappedScreenState();
 }
 
-class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
+class FileViewTappedScreenState extends State<FileViewTappedScreen> {
   late SupplierProvider supplierProvider;
   late LoginProvider loginProvider;
   TextEditingController itemMakeController = TextEditingController();
@@ -38,17 +38,17 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
   String? uploadedFileBase64;
 
   // List to store selected images
-  List<XFile> selectedImages = [];
+  List<XFile> selectedImages = <XFile>[];
   int? _currentImageIndex; // To track the selected image for full-screen view
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
+      allowedExtensions: <String>['pdf', 'doc', 'docx'],
     );
 
     if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      final fileSizeInBytes = await file.length();
+      final File file = File(result.files.single.path!);
+      final int fileSizeInBytes = await file.length();
 
       if (fileSizeInBytes > 1024 * 1024) {
         // 1MB = 1024 * 1024 bytes
@@ -56,15 +56,15 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
         return;
       }
 
-      final fileExtension = result.files.single.extension?.toLowerCase();
-      const allowedExtensions = ['pdf', 'doc', 'docx'];
+      final String? fileExtension = result.files.single.extension?.toLowerCase();
+      const List<String> allowedExtensions = <String>['pdf', 'doc', 'docx'];
 
       if (!allowedExtensions.contains(fileExtension)) {
         EasyLoading.showError('Only PDF, DOC, and DOCX files are allowed.');
         return;
       }
 
-      final fileBytes = await file.readAsBytes();
+      final Uint8List fileBytes = await file.readAsBytes();
       setState(() {
         uploadedFileName = result.files.single.name;
         uploadedFileBase64 = base64Encode(fileBytes);
@@ -89,7 +89,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
     Utils.callLocApi();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final selectedItem = widget.data; // ✅ Use passed-in data directly
+      final ItemsByPurchaseOrderModel selectedItem = widget.data; // ✅ Use passed-in data directly
 
       slaForQcController.text = selectedItem.slaDate != null
           ? DateFormat('dd-MM-yyyy')
@@ -163,8 +163,8 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
 
     // === Step 4: Prepare Images for Upload ===
-    List<QCInspectionImages> imagesList = selectedImages.map((image) {
-      return QCInspectionImages(
+    List<SaveQCInspectionImages> imagesList = selectedImages.map((XFile image) {
+      return SaveQCInspectionImages(
         appName: "STORESAPP",
         imageType: selectedImages.indexOf(image) + 1,
         imageName: image.name,
@@ -212,7 +212,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
   // Image picker, calendar selection, etc., remain the same
   Future<void> _captureImage() async {
     if (selectedImages.length < 5) {
-      final image = await Utils.openCamera(getBase64: false);
+      final dynamic image = await Utils.openCamera(getBase64: false);
       if (image != null && image is XFile) {
         setState(() {
           selectedImages.add(image);
@@ -238,7 +238,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       firstDate: DateTime(1990),
       lastDate: now,
       locale: const Locale('en', 'US'),
-      builder: (context, child) {
+      builder: (BuildContext context, Widget? child) {
         return Theme(
           data: Theme.of(context).copyWith(
             primaryColor: Colors.blueGrey,
@@ -271,7 +271,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
       firstDate: DateTime(2000), // Allows past dates
       lastDate: currentDate, // Restrict to today or earlier
       locale: const Locale('en', 'US'),
-      builder: (context, child) {
+      builder: (BuildContext context, Widget? child) {
         return Theme(
           data: Theme.of(context).copyWith(
             primaryColor: Colors.blueGrey,
@@ -312,12 +312,12 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: PhotoViewGallery.builder(
             itemCount: selectedImages.length,
-            builder: (context, index) {
+            builder: (BuildContext context, int index) {
               return PhotoViewGalleryPageOptions(
                 imageProvider: FileImage(File(selectedImages[index].path)),
                 minScale: PhotoViewComputedScale.contained,
@@ -350,7 +350,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
             padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 CustomText(
                     writtenText: "Item Make*",
                     textStyle: ThemeTextStyle.style()),
@@ -399,7 +399,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      children: <Widget>[
                         Text(
                           selectedYearOfManufacturerDisplay ?? "Select Date",
                           style: TextStyle(
@@ -432,7 +432,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      children: <Widget>[
                         Text(
                           selectedDateOfQCInspectionDisplay ?? "Select Date",
                           style: TextStyle(
@@ -473,7 +473,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                 const SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: <Widget>[
                     Text(
                       "Upload Document (PDF/DOC)",
                       style: Theme.of(context).textTheme.titleMedium,
@@ -492,7 +492,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                               onTap: _pickFile,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: <Widget>[
                                   const Icon(Icons.upload_file,
                                       color: Colors.blue),
                                   const SizedBox(width: 10),
@@ -506,7 +506,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                             )
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                              children: <Widget>[
                                 Expanded(
                                   child: Text(
                                     uploadedFileName!,
@@ -554,7 +554,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                 const SizedBox(height: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: <Widget>[
                     // Upload Image Section
                     CustomText(
                       writtenText: "Upload QC Reports and Photos",
@@ -573,7 +573,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                       ),
                       itemCount: selectedImages.length +
                           (selectedImages.length < 5 ? 1 : 0),
-                      itemBuilder: (context, index) {
+                      itemBuilder: (BuildContext context, int index) {
                         if (index == selectedImages.length) {
                           // Image Upload Button
                           return GestureDetector(
@@ -592,7 +592,7 @@ class _FileViewTappedScreenState extends State<FileViewTappedScreen> {
                         return GestureDetector(
                           onTap: () => _openFullScreenImage(index),
                           child: Stack(
-                            children: [
+                            children: <Widget>[
                               Container(
                                 decoration: BoxDecoration(
                                   image: DecorationImage(

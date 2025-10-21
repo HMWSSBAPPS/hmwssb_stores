@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, avoid_dynamic_calls
+
 class SaveIMSQCInspectionDetailsModel {
   int? purchaseOrderID;
   int? purchaseOrderLineItemID;
@@ -19,7 +21,7 @@ class SaveIMSQCInspectionDetailsModel {
   String? uploadDocName;
   String? uploadDocBase64;
   String? inspectionLevel;
-  List<QCInspectionImages>? qCInspectionImages;
+  List<SaveQCInspectionImages>? qCInspectionImages;
 
   SaveIMSQCInspectionDetailsModel(
       {this.purchaseOrderID,
@@ -66,44 +68,44 @@ class SaveIMSQCInspectionDetailsModel {
     uploadDocBase64 = json['UploadDocBase64'];
     inspectionLevel = json['InspectionLevel'];
     if (json['QCInspectionImages'] != null) {
-      qCInspectionImages = <QCInspectionImages>[];
+      qCInspectionImages = <SaveQCInspectionImages>[];
       json['QCInspectionImages'].forEach((v) {
-        qCInspectionImages!.add(new QCInspectionImages.fromJson(v));
+        qCInspectionImages!.add(SaveQCInspectionImages.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['PurchaseOrderID'] = this.purchaseOrderID;
-    data['PurchaseOrderLineItemID'] = this.purchaseOrderLineItemID;
-    data['Quantity'] = this.quantity;
-    data['QCApprovedQuantity'] = this.qCApprovedQuantity;
-    data['UnitType'] = this.unitType;
-    data['GmReadiness'] = this.gmReadiness;
-    data['ItemMake'] = this.itemMake;
-    data['QuantityToInspect'] = this.quantityToInspect;
-    data['BatchNo'] = this.batchNo;
-    data['ManufactureDate'] = this.manufactureDate;
-    data['InspectionDate'] = this.inspectionDate;
-    data['InspectionRemarks'] = this.inspectionRemarks;
-    data['QCDoneBy'] = this.qCDoneBy;
-    data['SLAQCChecks'] = this.sLAQCChecks;
-    data['HSMNo'] = this.hSMNo;
-    data['RefPkey'] = this.refPkey;
-    data['QCStatus'] = this.qCStatus;
-    data['UploadDocName'] = this.uploadDocName;
-    data['UploadDocBase64'] = this.uploadDocBase64;
-    data['InspectionLevel'] = this.inspectionLevel;
-    if (this.qCInspectionImages != null) {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['PurchaseOrderID'] = purchaseOrderID;
+    data['PurchaseOrderLineItemID'] = purchaseOrderLineItemID;
+    data['Quantity'] = quantity;
+    data['QCApprovedQuantity'] = qCApprovedQuantity;
+    data['UnitType'] = unitType;
+    data['GmReadiness'] = gmReadiness;
+    data['ItemMake'] = itemMake;
+    data['QuantityToInspect'] = quantityToInspect;
+    data['BatchNo'] = batchNo;
+    data['ManufactureDate'] = manufactureDate;
+    data['InspectionDate'] = inspectionDate;
+    data['InspectionRemarks'] = inspectionRemarks;
+    data['QCDoneBy'] = qCDoneBy;
+    data['SLAQCChecks'] = sLAQCChecks;
+    data['HSMNo'] = hSMNo;
+    data['RefPkey'] = refPkey;
+    data['QCStatus'] = qCStatus;
+    data['UploadDocName'] = uploadDocName;
+    data['UploadDocBase64'] = uploadDocBase64;
+    data['InspectionLevel'] = inspectionLevel;
+    if (qCInspectionImages != null) {
       data['QCInspectionImages'] =
-          this.qCInspectionImages!.map((v) => v.toJson()).toList();
+          qCInspectionImages!.map((SaveQCInspectionImages v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
-class QCInspectionImages {
+class SaveQCInspectionImages {
   String? appName;
   int? imageType;
   String? imageName;
@@ -111,7 +113,7 @@ class QCInspectionImages {
   String? imageLongitude;
   String? base64Image;
 
-  QCInspectionImages(
+  SaveQCInspectionImages(
       {this.appName,
         this.imageType,
         this.imageName,
@@ -119,7 +121,7 @@ class QCInspectionImages {
         this.imageLongitude,
         this.base64Image});
 
-  QCInspectionImages.fromJson(Map<String, dynamic> json) {
+  SaveQCInspectionImages.fromJson(Map<String, dynamic> json) {
     appName = json['AppName'];
     imageType = json['ImageType'];
     imageName = json['ImageName'];
@@ -129,13 +131,13 @@ class QCInspectionImages {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AppName'] = this.appName;
-    data['ImageType'] = this.imageType;
-    data['ImageName'] = this.imageName;
-    data['ImageLatitude'] = this.imageLatitude;
-    data['ImageLongitude'] = this.imageLongitude;
-    data['Base64Image'] = this.base64Image;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AppName'] = appName;
+    data['ImageType'] = imageType;
+    data['ImageName'] = imageName;
+    data['ImageLatitude'] = imageLatitude;
+    data['ImageLongitude'] = imageLongitude;
+    data['Base64Image'] = base64Image;
     return data;
   }
 }

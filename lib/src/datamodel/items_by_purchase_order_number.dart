@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, avoid_dynamic_calls
+
 class ItemsByPurchaseOrderNumberModel {
   MItem1? mItem1;
   List<ItemsByPurchaseOrderModel>? mItem2;
@@ -6,22 +8,22 @@ class ItemsByPurchaseOrderNumberModel {
 
   ItemsByPurchaseOrderNumberModel.fromJson(Map<String, dynamic> json) {
     mItem1 =
-    json['m_Item1'] != null ? new MItem1.fromJson(json['m_Item1']) : null;
+    json['m_Item1'] != null ? MItem1.fromJson(json['m_Item1']) : null;
     if (json['m_Item2'] != null) {
       mItem2 = <ItemsByPurchaseOrderModel>[];
       json['m_Item2'].forEach((v) {
-        mItem2!.add(new ItemsByPurchaseOrderModel.fromJson(v));
+        mItem2!.add(ItemsByPurchaseOrderModel.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.mItem1 != null) {
-      data['m_Item1'] = this.mItem1!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (mItem1 != null) {
+      data['m_Item1'] = mItem1!.toJson();
     }
-    if (this.mItem2 != null) {
-      data['m_Item2'] = this.mItem2!.map((v) => v.toJson()).toList();
+    if (mItem2 != null) {
+      data['m_Item2'] = mItem2!.map((ItemsByPurchaseOrderModel v) => v.toJson()).toList();
     }
     return data;
   }
@@ -41,10 +43,10 @@ class MItem1 {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ResponseCode'] = this.responseCode;
-    data['ResponseType'] = this.responseType;
-    data['Description'] = this.description;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ResponseCode'] = responseCode;
+    data['ResponseType'] = responseType;
+    data['Description'] = description;
     return data;
   }
 }
@@ -99,21 +101,21 @@ class ItemsByPurchaseOrderModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Pkey'] = this.pkey;
-    data['PurchaseOrderNo'] = this.purchaseOrderNo;
-    data['LineItemPKey'] = this.lineItemPKey;
-    data['ItemName'] = this.itemName;
-    data['Quantity'] = this.quantity;
-    data['Units'] = this.units;
-    data['ReadyNessStatus'] = this.readyNessStatus;
-    data['ItemMake'] = this.itemMake;
-    data['QuantitytoInspect'] = this.quantitytoInspect;
-    data['UnitsRate'] = this.unitsRate;
-    data['SlaDate'] = this.slaDate;
-    data['RefPkey'] = this.refPkey;
-    data['AgreementNo'] = this.agreementNo;
-    data['AgreementDate'] = this.agreementDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Pkey'] = pkey;
+    data['PurchaseOrderNo'] = purchaseOrderNo;
+    data['LineItemPKey'] = lineItemPKey;
+    data['ItemName'] = itemName;
+    data['Quantity'] = quantity;
+    data['Units'] = units;
+    data['ReadyNessStatus'] = readyNessStatus;
+    data['ItemMake'] = itemMake;
+    data['QuantitytoInspect'] = quantitytoInspect;
+    data['UnitsRate'] = unitsRate;
+    data['SlaDate'] = slaDate;
+    data['RefPkey'] = refPkey;
+    data['AgreementNo'] = agreementNo;
+    data['AgreementDate'] = agreementDate;
     return data;
   }
 }

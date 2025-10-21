@@ -1,7 +1,6 @@
 
-import 'dart:ui';
 
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class ThemeTextStyle {
   // static const String fontFamily = "Poppins";

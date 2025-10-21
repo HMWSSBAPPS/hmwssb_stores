@@ -1,4 +1,4 @@
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class DottedDivider extends StatelessWidget {
   const DottedDivider({

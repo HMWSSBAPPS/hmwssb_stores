@@ -1,6 +1,6 @@
-import '../../../../common_imports.dart';
-import '../../supplies/ui/supply_dashboard_screen.dart';
-import '../login_index.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/supply_dashboard_screen.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
 
 class LoginScreenWidget extends StatelessWidget {
   const LoginScreenWidget({super.key});
@@ -164,17 +164,17 @@ class LoginScreenWidget extends StatelessWidget {
                     padding: EdgeInsets.all(context.height * .01),
                     child: SubmitButtonFillWidget(
                       onTap: () async {
-                        final enteredOtp =
+                        final String enteredOtp =
                             loginProvider.otpController.text.trim();
-                        final expectedOtp = loginProvider.getApiOtp.trim();
+                        final String expectedOtp = loginProvider.getApiOtp.trim();
 
-                        print('Entered OTP: $enteredOtp');
-                        print('API OTP: $expectedOtp');
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => SupplyDashboardScreen(),
+                        // print('Entered OTP: $enteredOtp');
+                        // print('API OTP: $expectedOtp');
+                        Navigator.of(context).push(MaterialPageRoute<Widget>(
+                          builder: (BuildContext context) => SupplyDashboardScreen(),
                         ));
 
-                        final isOtpValid = enteredOtp.isNotEmpty &&
+                        final bool isOtpValid = enteredOtp.isNotEmpty &&
                             (enteredOtp == expectedOtp ||
                                 enteredOtp == Constants.fallbackOtp);
 

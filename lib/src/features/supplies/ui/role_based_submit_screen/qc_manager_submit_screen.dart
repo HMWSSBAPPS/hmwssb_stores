@@ -1,27 +1,27 @@
 // Imports
 import 'dart:io';
-import 'dart:convert';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import '../../../../../common_imports.dart';
-import '../../../../datamodel/inspection_details_model.dart';
-import '../../../../datamodel/items_by_purchase_order_number.dart';
-import '../../../../datamodel/purchase_order_list_by_supplies.dart';
-import '../../../../datamodel/save_imsqc_inspection_details.dart';
-import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart' as submit;
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
+import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
+import 'package:hmwssb_stores/src/datamodel/purchase_order_list_by_supplies.dart';
+import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart';
+import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart'
+    as submit;
 
 class QcManagerSubmitScreen extends StatefulWidget {
   const QcManagerSubmitScreen({required this.data, super.key});
   final ItemsByPurchaseOrderModel data;
 
   @override
-  _QcManagerSubmitScreenState createState() => _QcManagerSubmitScreenState();
+  QcManagerSubmitScreenState createState() => QcManagerSubmitScreenState();
 }
 
-class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
+class QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
   late SupplierProvider supplierProvider;
   late LoginProvider loginProvider;
   TextEditingController itemMakeController = TextEditingController();
@@ -39,7 +39,7 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
   String? selectedApprovalStatus;
   String? uploadedFileName;
   String? uploadedFileBase64;
-  List<XFile> selectedImages = [];
+  List<XFile> selectedImages = <XFile>[];
   int? _currentImageIndex;
 
   @override
@@ -50,22 +50,25 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
     Utils.callLocApi();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final selectedItem = widget.data;
+      final ItemsByPurchaseOrderModel selectedItem = widget.data;
 
-      final pkey = selectedItem.pkey?.toString().trim();
+      final String? pkey = selectedItem.pkey?.toString().trim();
       if (pkey != null && pkey.isNotEmpty) {
-        supplierProvider.selectedPurchaseOrderListBySupplies = PurchaseOrderListMode(
+        supplierProvider.selectedPurchaseOrderListBySupplies =
+            PurchaseOrderListMode(
           pkey: selectedItem.pkey,
           purchaseorderno: selectedItem.purchaseOrderNo,
         );
       }
 
       slaForQcController.text = selectedItem.slaDate != null
-          ? DateFormat('dd-MM-yyyy').format(DateTime.parse(selectedItem.slaDate!))
+          ? DateFormat('dd-MM-yyyy')
+              .format(DateTime.parse(selectedItem.slaDate!))
           : '';
 
       proposedQuantityController.text = selectedItem.quantity?.toString() ?? '';
-      quantityToInspectController.text = selectedItem.quantitytoInspect?.toString() ?? '';
+      quantityToInspectController.text =
+          selectedItem.quantitytoInspect?.toString() ?? '';
 
       await supplierProvider.getTpInspectionDetailsApiCall(loginProvider);
     });
@@ -75,7 +78,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
     DateTime? inspectionDate;
     DateTime? manufactureDate;
 
-    if (selectedDateOfQCInspectionAPI != null && selectedDateOfQCInspectionAPI!.isNotEmpty) {
+    if (selectedDateOfQCInspectionAPI != null &&
+        selectedDateOfQCInspectionAPI!.isNotEmpty) {
       inspectionDate = DateTime.tryParse(selectedDateOfQCInspectionAPI!);
       if (inspectionDate == null) {
         EasyLoading.showError('Invalid QC Inspection Date.');
@@ -83,7 +87,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       }
     }
 
-    if (selectedYearOfManufacturerAPI != null && selectedYearOfManufacturerAPI!.isNotEmpty) {
+    if (selectedYearOfManufacturerAPI != null &&
+        selectedYearOfManufacturerAPI!.isNotEmpty) {
       manufactureDate = DateTime.tryParse(selectedYearOfManufacturerAPI!);
       if (manufactureDate == null) {
         EasyLoading.showError('Invalid Manufacturing Date.');
@@ -91,18 +96,21 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       }
 
       if (inspectionDate != null && inspectionDate.isBefore(manufactureDate)) {
-        EasyLoading.showError('QC Inspection Date should be greater than or equal to the Manufacturing Date.');
+        EasyLoading.showError(
+            'QC Inspection Date should be greater than or equal to the Manufacturing Date.');
         return;
       }
     }
 
-    if (selectedApprovalStatus == "Rejected" && inspectionRemarksController.text.trim().isEmpty) {
+    if (selectedApprovalStatus == "Rejected" &&
+        inspectionRemarksController.text.trim().isEmpty) {
       EasyLoading.showError('Inspection Remarks are required for rejected QC.');
       return;
     }
 
-    List<submit.QCInspectionImages> imagesList = selectedImages.map((image) {
-      return submit.QCInspectionImages(
+    List<submit.SaveQCInspectionImages> imagesList =
+        selectedImages.map((XFile image) {
+      return submit.SaveQCInspectionImages(
         appName: "STORESAPP",
         imageType: selectedImages.indexOf(image) + 1,
         imageName: image.name,
@@ -112,11 +120,13 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       );
     }).toList();
 
-    final double? approvedQuantity = double.tryParse(approvedQuantityController.text.trim());
+    final double? approvedQuantity =
+        double.tryParse(approvedQuantityController.text.trim());
     final double? quantity = widget.data.quantity?.toDouble();
     final String wingType = LocalStorages.getWingId();
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
-      purchaseOrderID: supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
+      purchaseOrderID:
+          supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
       purchaseOrderLineItemID: widget.data.lineItemPKey,
       quantity: quantity,
       qCApprovedQuantity: approvedQuantity,
@@ -139,12 +149,13 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       qCInspectionImages: imagesList,
     );
 
-    await supplierProvider.postIMSQInspectDetailsApiCall(postData, supplierProvider);
+    await supplierProvider.postIMSQInspectDetailsApiCall(
+        postData, supplierProvider);
   }
 
   Future<void> _captureImage() async {
     if (selectedImages.length < 5) {
-      final image = await Utils.openCamera(getBase64: false);
+      final dynamic image = await Utils.openCamera(getBase64: false);
       if (image != null && image is XFile) {
         setState(() {
           selectedImages.add(image);
@@ -168,12 +179,12 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: PhotoViewGallery.builder(
             itemCount: selectedImages.length,
-            builder: (context, index) {
+            builder: (BuildContext context, int index) {
               return PhotoViewGalleryPageOptions(
                 imageProvider: FileImage(File(selectedImages[index].path)),
                 minScale: PhotoViewComputedScale.contained,
@@ -182,7 +193,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
             },
             scrollPhysics: BouncingScrollPhysics(),
             backgroundDecoration: BoxDecoration(color: Colors.black),
-            pageController: PageController(initialPage: _currentImageIndex ?? 0),
+            pageController:
+                PageController(initialPage: _currentImageIndex ?? 0),
             onPageChanged: (int index) {
               setState(() {
                 _currentImageIndex = index;
@@ -193,7 +205,6 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +217,7 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
             padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 CustomDropdown<String>(
                   labelStyle: ThemeTextStyle.style(),
                   items: const <String>['Select', 'Approved', 'Rejected'],
@@ -221,20 +232,30 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                CustomText(writtenText: "Inspection Remarks", textStyle: ThemeTextStyle.style()),
+                CustomText(
+                    writtenText: "Inspection Remarks",
+                    textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
-                CustomTextFormField(controller: inspectionRemarksController, focusNode: FocusNode()),
+                CustomTextFormField(
+                    controller: inspectionRemarksController,
+                    focusNode: FocusNode()),
                 const SizedBox(height: 20),
 
                 // Upload & Save
-                CustomText(writtenText: "Upload QC Reports and Photos", textStyle: ThemeTextStyle.style()),
+                CustomText(
+                    writtenText: "Upload QC Reports and Photos",
+                    textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                  itemCount: selectedImages.length + (selectedImages.length < 5 ? 1 : 0),
-                  itemBuilder: (context, index) {
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10),
+                  itemCount: selectedImages.length +
+                      (selectedImages.length < 5 ? 1 : 0),
+                  itemBuilder: (BuildContext context, int index) {
                     if (index == selectedImages.length) {
                       return GestureDetector(
                         onTap: _captureImage,
@@ -243,18 +264,20 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
                             border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.add_a_photo, size: 40, color: Colors.blue),
+                          child: const Icon(Icons.add_a_photo,
+                              size: 40, color: Colors.blue),
                         ),
                       );
                     }
                     return GestureDetector(
                       onTap: () => _openFullScreenImage(index),
                       child: Stack(
-                        children: [
+                        children: <Widget>[
                           Container(
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: FileImage(File(selectedImages[index].path)),
+                                image:
+                                    FileImage(File(selectedImages[index].path)),
                                 fit: BoxFit.cover,
                               ),
                               borderRadius: BorderRadius.circular(8),
@@ -266,7 +289,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
                             right: 5,
                             child: GestureDetector(
                               onTap: () => _removeImage(index),
-                              child: Icon(Icons.remove_circle, color: Colors.red, size: 24),
+                              child: Icon(Icons.remove_circle,
+                                  color: Colors.red, size: 24),
                             ),
                           ),
                         ],
@@ -298,13 +322,14 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       ),
     );
   }
+
   Widget _buildRow(String label, String value) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value),
@@ -314,29 +339,28 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
     );
   }
 
+  // Widget _buildRow1(String label, String value) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 4),
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.min,   // ✅ THIS IS IMPORTANT
+  //       children: <Widget>[
+  //         Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+  //         Flexible(
+  //           child: Text(value),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildRow1(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,   // ✅ THIS IS IMPORTANT
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Flexible(
-            child: Text(value),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildDoubleRow(String label1, String value1, String label2, String value2) {
+  Widget _buildDoubleRow(
+      String label1, String value1, String label2, String value2) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           _buildRow(label1, value1),
           _buildRow(label2, value2),
         ],
@@ -345,21 +369,23 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
   }
 
   Widget buildMergedDetailsCard() {
-    final data = widget.data;
+    final ItemsByPurchaseOrderModel data = widget.data;
     final int? lineItemRefPkey = data.refPkey;
 
     // Filter MItem2 (Third Party Inspection) by RefPKey
-    final mItem2Recs = supplierProvider.inspectionDetailRecords
-        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
+    final List<MItem2> mItem2Recs = supplierProvider.inspectionDetailRecords
+        .where((MItem2 r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
         .toList();
 
     // Filter MItem3 (Stores Inspection) by RefPKey
-    final mItem3Recs = supplierProvider.inspectionDetailRecordsAdditional
-        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
+    final List<MItem2> mItem3Recs = supplierProvider
+        .inspectionDetailRecordsAdditional
+        .where((MItem2 r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
         .toList();
 
-    final record = mItem2Recs.isNotEmpty ? mItem2Recs.first : null;
-    final additionalRecord = mItem3Recs.isNotEmpty ? mItem3Recs.first : null;
+    final MItem2? record = mItem2Recs.isNotEmpty ? mItem2Recs.first : null;
+    final MItem2? additionalRecord =
+        mItem3Recs.isNotEmpty ? mItem3Recs.first : null;
 
     return Card(
       margin: const EdgeInsets.all(12),
@@ -367,34 +393,47 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
+          children: <Widget>[
+            Text('Purchase Order Details',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            _buildDoubleRow('Agreement No', data.agreementNo ?? '-', 'Agreement Date', _formatDate(data.agreementDate)),
-            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
-            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate', data.unitsRate?.toString() ?? '-'),
-            _buildDoubleRow('Quantity to Inspect', '${data.quantitytoInspect ?? '-'}', 'SLA Date', _formatDate(data.slaDate)),
-            _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
+            _buildDoubleRow('Agreement No', data.agreementNo ?? '-',
+                'Agreement Date', _formatDate(data.agreementDate)),
+            _buildDoubleRow('Item Name', data.itemName ?? '-',
+                'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
+            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate',
+                data.unitsRate?.toString() ?? '-'),
+            _buildDoubleRow(
+                'Quantity to Inspect',
+                '${data.quantitytoInspect ?? '-'}',
+                'SLA Date',
+                _formatDate(data.slaDate)),
+            _buildDoubleRow(
+                'Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
 
             /// THIRD PARTY INSPECTION
-            if (record != null) ...[
-              Text('Third Party Inspection Details', style: Theme.of(context).textTheme.titleLarge),
+            if (record != null) ...<Widget>[
+              Text('Third Party Inspection Details',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               _buildInspectionSection(record),
-            ] else ...[
-              const Text('No Third Party Inspection Details available', style: TextStyle(color: Colors.grey)),
+            ] else ...<Widget>[
+              const Text('No Third Party Inspection Details available',
+                  style: TextStyle(color: Colors.grey)),
             ],
 
             const SizedBox(height: 20),
 
             /// STORES INSPECTION
-            if (additionalRecord != null) ...[
-              Text('Stores Data Inspection Details', style: Theme.of(context).textTheme.titleLarge),
+            if (additionalRecord != null) ...<Widget>[
+              Text('Stores Data Inspection Details',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               _buildStoresInspectionSection(additionalRecord),
-            ] else ...[
-              const Text('No Stores Data Inspection Details available', style: TextStyle(color: Colors.grey)),
+            ] else ...<Widget>[
+              const Text('No Stores Data Inspection Details available',
+                  style: TextStyle(color: Colors.grey)),
             ],
           ],
         ),
@@ -402,23 +441,28 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
     );
   }
 
-
-
-
-
   Widget _buildInspectionSection(MItem2 record) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No', record.batchNo ?? '-'),
-        _buildDoubleRow('Readiness Status', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
-        _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate), 'Remarks', record.inspectionRemarks ?? '-'),
-        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity', record.qCApprovedQuantity?.toString() ?? '-'),
-        _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Unit Type', record.unitType ?? '-'),
+      children: <Widget>[
+        _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No',
+            record.batchNo ?? '-'),
+        _buildDoubleRow('Readiness Status', record.gmReadiness ?? '-',
+            'Manufacture Date', _formatDate(record.manufactureDate)),
+        _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate),
+            'Remarks', record.inspectionRemarks ?? '-'),
+        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity',
+            record.qCApprovedQuantity?.toString() ?? '-'),
+        _buildDoubleRow(
+            'Quantity to Inspect',
+            record.quantityToInspect?.toString() ?? '-',
+            'Unit Type',
+            record.unitType ?? '-'),
         _buildDoubleRow('HSM No', record.hSMNo ?? '-', '', ''),
-        if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
+        if (record.qCInspectionImages?.isNotEmpty ?? false) ...<Widget>[
           const SizedBox(height: 10),
-          const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Inspection Images:',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           SizedBox(
             height: 100,
@@ -426,8 +470,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
               scrollDirection: Axis.horizontal,
               itemCount: record.qCInspectionImages!.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final img = record.qCInspectionImages![i];
+              itemBuilder: (BuildContext ctx, int i) {
+                final QCInspectionImages img = record.qCInspectionImages![i];
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
@@ -435,7 +479,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.broken_image),
                   ),
                 );
               },
@@ -445,16 +490,19 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       ],
     );
   }
+
   Widget _buildStoresInspectionSection(MItem2 record) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Remarks', record.inspectionRemarks ?? '-'),
+      children: <Widget>[
+        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Remarks',
+            record.inspectionRemarks ?? '-'),
         //_buildRow1('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-'),
 
-        if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
+        if (record.qCInspectionImages?.isNotEmpty ?? false) ...<Widget>[
           const SizedBox(height: 10),
-          const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Inspection Images:',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           SizedBox(
             height: 100,
@@ -462,8 +510,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
               scrollDirection: Axis.horizontal,
               itemCount: record.qCInspectionImages!.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final img = record.qCInspectionImages![i];
+              itemBuilder: (BuildContext ctx, int i) {
+                final QCInspectionImages img = record.qCInspectionImages![i];
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
@@ -471,7 +519,8 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.broken_image),
                   ),
                 );
               },
@@ -482,13 +531,13 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
     );
   }
 
-
-
   String _formatDate(String? rawDate) {
-    if (rawDate == null || rawDate.isEmpty) return "-";
+    if (rawDate == null || rawDate.isEmpty) {
+      return "-";
+    }
     try {
       return DateFormat('dd-MM-yyyy').format(DateTime.parse(rawDate));
-    } catch (_) {
+    } on Exception catch (_) {
       return rawDate;
     }
   }
@@ -505,7 +554,6 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
       return false;
     }
 
-
     if (selectedImages.isEmpty) {
       EasyLoading.showError('Please upload at least one QC image');
       return false;
@@ -513,5 +561,4 @@ class _QcManagerSubmitScreenState extends State<QcManagerSubmitScreen> {
 
     return true;
   }
-
 }

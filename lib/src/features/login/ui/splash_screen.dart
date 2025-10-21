@@ -1,7 +1,7 @@
 
-import '../../../../common_imports.dart';
-import '../login_index.dart';
-import '../provider/login_provider.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
+import 'package:hmwssb_stores/src/features/login/provider/login_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ..backgroundColor = Colors.green
       ..indicatorColor = Colors.yellow
       ..textColor = Colors.yellow
-      ..maskColor = Colors.blue.withOpacity(0.5)
+      ..maskColor = Colors.blue.withAlpha(128)
       ..userInteractions = false
       ..dismissOnTap = false;
   }

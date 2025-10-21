@@ -1,11 +1,12 @@
   import 'package:hmwssb_stores/common_imports.dart';
 import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
+import 'package:hmwssb_stores/src/datamodel/login_model.dart' as login;
   import 'package:hmwssb_stores/src/features/login/login_index.dart';
-  import '../../../core/network/network_index.dart';
-  import '../../../datamodel/all_supply_details.dart';
-  import '../../../datamodel/items_by_purchase_order_number.dart';
-  import '../../../datamodel/purchase_order_list_by_supplies.dart';
-  import '../../../datamodel/save_imsqc_inspection_details.dart';
+  import 'package:hmwssb_stores/src/core/network/network_index.dart';
+  import 'package:hmwssb_stores/src/datamodel/all_supply_details.dart';
+  import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
+  import 'package:hmwssb_stores/src/datamodel/purchase_order_list_by_supplies.dart';
+  import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart';
 
   class SupplierProvider extends ChangeNotifier {
     bool isLoading = false;
@@ -14,11 +15,11 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
       this.isLoading = isLoading;
     }
 
-    final TextEditingController ItemNameController = TextEditingController();
-    final FocusNode ItemNameFocusNode = FocusNode();
+    final TextEditingController itemNameController = TextEditingController();
+    final FocusNode itemNameFocusNode = FocusNode();
 
     String getWingTypeFromLocalStorage() {
-      final user = LocalStorages.getFullUserData();
+      final login.MItem2? user = LocalStorages.getFullUserData();
       if (user != null && user.rolesInfo != null && user.rolesInfo!.isNotEmpty) {
         return user.rolesInfo!.first.wingType ?? "";
       }
@@ -58,7 +59,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         isLoading: false,
         apiUrl: AppUrls.getAllSuplierDetailsUrl,
         apiFunType: APITypes.post,
-        sendingData: {
+        sendingData: <String?, dynamic>{
           "UserID": userId,
           "Wing": wingType,
         },
@@ -67,7 +68,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
       if (response.statusCode == 200) {
         AllSupplierDetailsModel data = AllSupplierDetailsModel.fromJson(response.body);
         if (data.mItem1?.responseCode == '200') {
-          supplierDetailsList = data.mItem2 ?? [];
+          supplierDetailsList = data.mItem2 ?? <AllSupplierDetailsListModel>[];
         }
       } else {
         EasyLoading.showError("Failed to fetch supplier details");
@@ -97,7 +98,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         isLoading: false,
         apiUrl: AppUrls.getPurchaseOrderListBySupplierUrl,
         apiFunType: APITypes.post,
-        sendingData: {
+        sendingData: <String?, dynamic>{
           "SupplierID": selectedSupplierDetails?.supplierId,
           "UserID": userId,
           "Wing": wingType,
@@ -109,7 +110,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         PurchaseOrderListBySuppliesModel.fromJson(response.body);
 
         if (data.mItem1?.responseCode == '200') {
-          purchaseOrderList = data.mItem2 ?? [];
+          purchaseOrderList = data.mItem2 ?? <PurchaseOrderListMode>[];
         }
       }
 
@@ -132,7 +133,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         isLoading: false,
         apiUrl: AppUrls.getItemByPurchaseOrderNumberUrl,
         apiFunType: APITypes.post,
-        sendingData: {
+        sendingData: <String?, dynamic>{
           "POID": selectedPurchaseOrderListBySupplies?.pkey,
           "Wing": wingType,
         },
@@ -143,7 +144,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         ItemsByPurchaseOrderNumberModel.fromJson(response.body);
 
         if (data.mItem1?.responseCode == '200') {
-          itemByPurchaseOrderList = data.mItem2 ?? [];
+          itemByPurchaseOrderList = data.mItem2 ?? <ItemsByPurchaseOrderModel>[];
         }
 
         printDebug('Purchase Order List loaded: $itemByPurchaseOrderList');
@@ -165,19 +166,19 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
       // print('API Request Body: ${postList.toJson()}');
 
       if (response.body is Map<String, dynamic>) {
-        final responseBody = response.body as Map<String, dynamic>;
-        final mItem1 = responseBody['m_Item1'] as Map<String, dynamic>?;
+        final Map<String, dynamic> responseBody = response.body as Map<String, dynamic>;
+        final Map<String, dynamic>? mItem1 = responseBody['m_Item1'] as Map<String, dynamic>?;
 
         if (mItem1 != null) {
-          final responseCode = mItem1['ResponseCode'];
-          final description = mItem1['Description'];
+          final int responseCode = mItem1['ResponseCode']??0;
+          final String? description = mItem1['Description']??Constants.empty;
 
           if (responseCode == 300 && description != null) {
             EasyLoading.showError(description);
           } else if (description != null &&
               description.contains('Inspection Saved Successfully')) {
             EasyLoading.showSuccess('Inspection Saved Successfully');
-            await Future.delayed(Duration(seconds: 2));
+            await Future<void>.delayed(Duration(seconds: 2));
             NavigateRoutes.navigatePop();
             NavigateRoutes.navigatePop();
           } else {
@@ -215,7 +216,7 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
         isLoading: false,
         apiUrl: AppUrls.getTPInspectionDetailsUrl,
         apiFunType: APITypes.post,
-        sendingData: {
+        sendingData: <String?, dynamic>{
           "POID": selectedPurchaseOrderListBySupplies?.pkey,
           "UserID": userId,
           "Wing": wingType,
@@ -223,11 +224,11 @@ import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
       );
 
       if (response.statusCode == 200) {
-        final model = InspectionDetailsModel.fromJson(response.body);
+        final InspectionDetailsModel model = InspectionDetailsModel.fromJson(response.body);
 
         if (model.mItem1?.responseCode == '200') {
-          inspectionDetailRecords = model.mItem2 ?? [];
-          inspectionDetailRecordsAdditional = model.mItem3 ?? []; // 👈 POPULATE ADDITIONAL RECORDS
+          inspectionDetailRecords = model.mItem2 ?? <MItem2>[];
+          inspectionDetailRecordsAdditional = model.mItem3 ?? <MItem2>[]; // 👈 POPULATE ADDITIONAL RECORDS
         }
       } else {
         EasyLoading.showError("Failed to fetch inspection details");

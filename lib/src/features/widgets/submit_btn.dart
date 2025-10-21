@@ -1,15 +1,15 @@
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class SubmitButtonFillWidget extends StatelessWidget {
   const SubmitButtonFillWidget({
     required this.onTap,
     required this.text,
     required this.btnColor,
-    this.textColor = ThemeColors.whiteColor,
+    required bool isEnabled, this.textColor = ThemeColors.whiteColor,
     this.borderRadius = 4.0,
     this.textPadding = const EdgeInsets.all(8.0),
     this.borderRadiusDesign,
-    super.key, required bool isEnabled,
+    super.key,
   });
   final String text;
   final Color btnColor;

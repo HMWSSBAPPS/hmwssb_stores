@@ -1,5 +1,5 @@
 
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class CustomCheckboxField extends StatelessWidget {
   final bool value;

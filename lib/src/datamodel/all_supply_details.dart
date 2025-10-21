@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, avoid_dynamic_calls
+
 class AllSupplierDetailsModel {
   MItem1? mItem1;
   List<AllSupplierDetailsListModel>? mItem2;
@@ -6,22 +8,22 @@ class AllSupplierDetailsModel {
 
   AllSupplierDetailsModel.fromJson(Map<String, dynamic> json) {
     mItem1 =
-    json['m_Item1'] != null ? new MItem1.fromJson(json['m_Item1']) : null;
+    json['m_Item1'] != null ? MItem1.fromJson(json['m_Item1']) : null;
     if (json['m_Item2'] != null) {
       mItem2 = <AllSupplierDetailsListModel>[];
       json['m_Item2'].forEach((v) {
-        mItem2!.add(new AllSupplierDetailsListModel.fromJson(v));
+        mItem2!.add(AllSupplierDetailsListModel.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.mItem1 != null) {
-      data['m_Item1'] = this.mItem1!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (mItem1 != null) {
+      data['m_Item1'] = mItem1!.toJson();
     }
-    if (this.mItem2 != null) {
-      data['m_Item2'] = this.mItem2!.map((v) => v.toJson()).toList();
+    if (mItem2 != null) {
+      data['m_Item2'] = mItem2!.map((AllSupplierDetailsListModel v) => v.toJson()).toList();
     }
     return data;
   }
@@ -41,10 +43,10 @@ class MItem1 {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ResponseCode'] = this.responseCode;
-    data['ResponseType'] = this.responseType;
-    data['Description'] = this.description;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ResponseCode'] = responseCode;
+    data['ResponseType'] = responseType;
+    data['Description'] = description;
     return data;
   }
 }
@@ -81,15 +83,15 @@ class AllSupplierDetailsListModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['SupplierId'] = this.supplierId;
-    data['AgencyName'] = this.agencyName;
-    data['AgreementValidity'] = this.agreementValidity;
-    data['WorkOrderDate'] = this.workOrderDate;
-    data['AgreementDate'] = this.agreementDate;
-    data['IsActiveStatus'] = this.isActiveStatus;
-    data['CreatedDate'] = this.createdDate;
-    data['ModifiedDate'] = this.modifiedDate;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['SupplierId'] = supplierId;
+    data['AgencyName'] = agencyName;
+    data['AgreementValidity'] = agreementValidity;
+    data['WorkOrderDate'] = workOrderDate;
+    data['AgreementDate'] = agreementDate;
+    data['IsActiveStatus'] = isActiveStatus;
+    data['CreatedDate'] = createdDate;
+    data['ModifiedDate'] = modifiedDate;
     return data;
   }
 }

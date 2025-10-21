@@ -1,4 +1,4 @@
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class CommonAppBar extends StatelessWidget {
   const CommonAppBar({required this.bodyWidget, super.key});

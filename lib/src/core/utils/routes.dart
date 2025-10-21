@@ -1,25 +1,25 @@
 // ignore_for_file: use_build_context_synchronously
 
 
-import '../../../common_imports.dart';
-import '../../datamodel/items_by_purchase_order_number.dart';
-import '../../features/login/login_index.dart';
-import '../../features/supplies/ui/file_tapped_view_screen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/AdminSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/QcDgmSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/QcGmSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/QcManagerSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/StoreDgmSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/StoreGmSubmitScreen.dart';
-import '../../features/supplies/ui/role_based_submit_screen/StoreManagerSubmitScreen.dart';
-import '../../features/supplies/ui/roles_based_screen/admin_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/store_gm_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/store_manager_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/store_dgm_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/qc_manager_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/qc_gm_screen.dart';
-import '../../features/supplies/ui/roles_based_screen/qc_dgm_screen.dart';
-import '../../features/supplies/ui/supply_dashboard_screen.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/file_tapped_view_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/admin_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/qc_dgm_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/qc_gm_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/qc_manager_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/store_dgm_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/store_gm_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/role_based_submit_screen/store_manager_submit_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/admin_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/store_gm_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/store_manager_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/store_dgm_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/qc_manager_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/qc_gm_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/roles_based_screen/qc_dgm_screen.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/supply_dashboard_screen.dart';
 
 class NavigateRoutes {
   /// Define a global key for the navigator
@@ -176,7 +176,7 @@ class NavigateRoutes {
     if (navigatorKey.currentContext != null) {
       Navigator.pushAndRemoveUntil(
         navigatorKey.currentContext!,
-        MaterialPageRoute(builder: (_) => screen),
+        MaterialPageRoute<Widget>(builder: (_) => screen),
             (Route<dynamic> route) => false,
       );
     } else {

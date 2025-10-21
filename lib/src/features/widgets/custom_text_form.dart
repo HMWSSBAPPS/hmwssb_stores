@@ -1,7 +1,6 @@
-import 'package:hmwssb_stores/src/features/widgets/widgets_index.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 /// Custom Text Form Field with label text
 class CustomLabelTextFormField extends StatelessWidget {
@@ -229,12 +228,12 @@ class CustomTextFormField extends StatelessWidget {
           enabledBorder: border ??
               OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
           disabledBorder: border ??
               OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+                borderSide: BorderSide(color: Colors.grey.shade400),
               ),
         ),
       ),
@@ -244,8 +243,147 @@ class CustomTextFormField extends StatelessWidget {
 
 
 ///DROPDOWN
+// class CustomDropdown<T> extends StatelessWidget {
+//   final TextStyle labelStyle;
+//   final AutovalidateMode? autovalidateMode;
+//   final List<T> items;
+//   final T? value;
+//   final String hintText;
+//   final String Function(T) itemLabel;
+//   final void Function(T?)? onChanged;
+//   final String? Function(T?)? validator;
+//   final String labelName;
+//   final double dropdownBoxMinHeight;
+//   final bool showSearchBox;
+
+//   const CustomDropdown({
+//     required this.labelStyle,
+//     required this.items,
+//     required this.itemLabel,
+//     required this.hintText,
+//     required this.labelName,
+//     this.autovalidateMode = AutovalidateMode.onUserInteraction,
+//     this.value,
+//     this.onChanged,
+//     this.validator,
+//     this.dropdownBoxMinHeight = 200,
+//     this.showSearchBox = false,
+//     super.key,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: <Widget>[
+//         RichText(
+//           text: TextSpan(
+//             children: _buildLabelTextSpans(labelName, labelStyle),
+//           ),
+//         ),
+//         8.ph,
+//         FormField<T>(
+//             autovalidateMode: autovalidateMode,
+//             validator: validator,
+//             initialValue: value,
+//             builder: (FormFieldState<T> state) {
+//               return Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: <Widget>[
+//                   Container(
+//                     decoration: BoxDecoration(
+//                         color: Colors.white,
+//                         borderRadius: BorderRadius.circular(12.0),
+//                         border: Border.all(
+//                           // color: ThemeColors.greyColor,
+//                           color: state.hasError
+//                               ? Colors.red
+//                               : ThemeColors.greyColor,
+//                         )),
+//                     child: DropdownSearch<T>(
+//                         // autoValidateMode: autovalidateMode,
+//                         items: items,
+//                         selectedItem: value,
+//                         itemAsString: itemLabel,
+//                         // onChanged: onChanged,
+//                         // validator: validator,
+//                         onChanged: (T? val) {
+//                           state.didChange(val);
+//                           if (onChanged != null) {
+//                             onChanged!(val);
+//                           }
+//                         },
+//                         dropdownDecoratorProps: DropDownDecoratorProps(
+//                             dropdownSearchDecoration: InputDecoration(
+//                                 contentPadding: const EdgeInsets.symmetric(
+//                                     horizontal: 12.0, vertical: 4.0),
+//                                 hintText: hintText,
+//                                 border: OutlineInputBorder(
+//                                   borderRadius: BorderRadius.circular(12.0),
+//                                 ))),
+//                         dropdownBuilder:
+//                             (BuildContext context, T? selectedItem) {
+//                           return Text(
+//                             selectedItem != null
+//                                 ? itemLabel(selectedItem)
+//                                 : hintText,
+//                             style: const TextStyle(color: Colors.black),
+//                           );
+//                         },
+//                         popupProps: PopupProps<T>.menu(
+//                           fit: FlexFit.loose,
+//                           // showSearchBox: false,
+//                           constraints: BoxConstraints(
+//                               minHeight: dropdownBoxMinHeight,
+//                               maxHeight: context.height * .6),
+//                           menuProps:
+//                               const MenuProps(backgroundColor: Colors.white),
+//                           showSearchBox: showSearchBox, // Enable the search box
+//                           searchFieldProps: TextFieldProps(
+//                             decoration: InputDecoration(
+//                               hintText: 'Search...',
+//                               border: OutlineInputBorder(
+//                                 borderRadius: BorderRadius.circular(4.0),
+//                               ),
+//                             ),
+//                           ),
+//                         )),
+//                   ),
+//                   if (state.hasError)
+//                     Padding(
+//                       padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+//                       child: CustomText(
+//                         writtenText: state.errorText ?? '',
+//                         textStyle: ThemeTextStyle.style(
+//                           color: Colors.red,
+//                           fontSize: 12,
+//                           fontWeight: FontWeight.normal,
+//                         ),
+//                       ),
+//                     ),
+//                 ],
+//               );
+//             }),
+//       ],
+//     );
+//   }
+
+//   List<TextSpan> _buildLabelTextSpans(
+//       String labelText, TextStyle labelTextStyle) {
+//     final List<TextSpan> spans = <TextSpan>[];
+//     final List<String> parts = labelText.split('*');
+//     for (int i = 0; i < parts.length; i++) {
+//       spans.add(TextSpan(text: parts[i], style: labelTextStyle));
+//       if (i < parts.length - 1) {
+//         spans.add(TextSpan(
+//             text: '*', style: labelTextStyle.copyWith(color: Colors.red)));
+//       }
+//     }
+//     return spans;
+//   }
+// }
 class CustomDropdown<T> extends StatelessWidget {
-  final TextStyle labelStyle;
+  final TextStyle? labelStyle;
   final AutovalidateMode? autovalidateMode;
   final List<T> items;
   final T? value;
@@ -254,21 +392,27 @@ class CustomDropdown<T> extends StatelessWidget {
   final void Function(T?)? onChanged;
   final String? Function(T?)? validator;
   final String labelName;
-  final double dropdownBoxMinHeight;
   final bool showSearchBox;
+  final double? dropDownMaxHeight;
+  final bool isSeparateHeading;
+  final VoidCallback? onBeforePopupOpening;
+  final bool isStarRequired;
 
   const CustomDropdown({
-    required this.labelStyle,
     required this.items,
     required this.itemLabel,
-    required this.hintText,
     required this.labelName,
+    required this.value,
+    required this.onChanged,
+    this.isStarRequired = false,
+    this.hintText = Constants.select,
+    this.labelStyle,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
-    this.value,
-    this.onChanged,
     this.validator,
-    this.dropdownBoxMinHeight = 200,
     this.showSearchBox = false,
+    this.dropDownMaxHeight,
+    this.isSeparateHeading = true,
+    this.onBeforePopupOpening,
     super.key,
   });
 
@@ -277,12 +421,29 @@ class CustomDropdown<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        RichText(
-          text: TextSpan(
-            children: _buildLabelTextSpans(labelName, labelStyle),
-          ),
-        ),
-        8.ph,
+        if (isSeparateHeading)
+          isStarRequired
+              ? Row(
+                  children: <Widget>[
+                    CustomText(
+                        writtenText: labelName,
+                        textStyle: labelStyle ?? ThemeTextStyle.style()),
+                    4.pw,
+                    CustomText(
+                        writtenText: '*',
+                        textStyle:
+                            ThemeTextStyle.style(color: ThemeColors.redColor)),
+                  ],
+                )
+              : CustomText(
+                  writtenText: labelName,
+                  textStyle: labelStyle ?? ThemeTextStyle.style()),
+
+        // RichText(
+        //     text: TextSpan(
+        //         children: _buildLabelTextSpans(
+        //             labelName, labelStyle ?? ThemeTextStyle.style()))),
+        if (isSeparateHeading) 8.ph,
         FormField<T>(
             autovalidateMode: autovalidateMode,
             validator: validator,
@@ -292,64 +453,72 @@ class CustomDropdown<T> extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(
-                          // color: ThemeColors.greyColor,
-                          color: state.hasError
-                              ? Colors.red
-                              : ThemeColors.greyColor,
-                        )),
-                    child: DropdownSearch<T>(
-                        // autoValidateMode: autovalidateMode,
-                        items: items,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4.0),
+                          border: Border.all(
+                            width: 0.5,
+                            // color: ThemeColors.greyColor,
+                            color: state.hasError
+                                ? Colors.red
+                                : ThemeColors.greyColor,
+                          )),
+                      child: DropdownSearch<T>(
+                        onBeforePopupOpening: (_) async {
+                          // state.didChange(selectedItem);
+                          // Provider.of<ProspectsProvider>(context, listen: false)
+                          //     .unFocusController();
+                          onBeforePopupOpening?.call();
+                          return true;
+                          // return null;
+                        },
+                        items: (String? filter, LoadProps? value) {
+                          return items;
+                        },
                         selectedItem: value,
-                        itemAsString: itemLabel,
-                        // onChanged: onChanged,
-                        // validator: validator,
+                        compareFn: (T a, T b) => a == b,
+                        itemAsString: (T item) => itemLabel(item),
+                        dropdownBuilder:
+                            (BuildContext context, T? selectedItem) {
+                          return Text(
+                            selectedItem != null
+                                ? itemLabel(selectedItem)
+                                : hintText.capitalizeFirstofEach,
+                            style: const TextStyle(color: Colors.black),
+                          );
+                        },
+                        popupProps: PopupProps<T>.menu(
+                          //                         itemBuilder: (BuildContext context, item, bool isSelected) {
+                          //   return widget(
+                          //     child: ListTile(
+                          //       title: Text(itemLabel(item)),
+                          //       selected: isSelected,
+                          //       tileColor: isSelected ? ThemeColors.primaryColor.withOpacity(0.1) : null,
+                          //     ),
+                          //   );
+                          // },
+                          constraints: BoxConstraints(
+                              maxHeight:
+                                  dropDownMaxHeight ?? items.length * 60),
+                          showSearchBox: showSearchBox,
+                          searchFieldProps: const TextFieldProps(
+                            decoration: InputDecoration(
+                              hintText: 'Search...',
+                              border: InputBorder.none,
+                              //  OutlineInputBorder(
+                              //   borderSide: BorderSide.none,
+                              //   // borderRadius: BorderRadius.circular(4.0),
+                              // ),
+                            ),
+                          ),
+                        ),
                         onChanged: (T? val) {
                           state.didChange(val);
                           if (onChanged != null) {
                             onChanged!(val);
                           }
                         },
-                        dropdownDecoratorProps: DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 4.0),
-                                hintText: hintText,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ))),
-                        dropdownBuilder:
-                            (BuildContext context, T? selectedItem) {
-                          return Text(
-                            selectedItem != null
-                                ? itemLabel(selectedItem)
-                                : hintText,
-                            style: const TextStyle(color: Colors.black),
-                          );
-                        },
-                        popupProps: PopupProps<T>.menu(
-                          fit: FlexFit.loose,
-                          // showSearchBox: false,
-                          constraints: BoxConstraints(
-                              minHeight: dropdownBoxMinHeight,
-                              maxHeight: context.height * .6),
-                          menuProps:
-                              const MenuProps(backgroundColor: Colors.white),
-                          showSearchBox: showSearchBox, // Enable the search box
-                          searchFieldProps: TextFieldProps(
-                            decoration: InputDecoration(
-                              hintText: 'Search...',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
-                          ),
-                        )),
-                  ),
+                      )),
                   if (state.hasError)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0, left: 4.0),
@@ -369,19 +538,19 @@ class CustomDropdown<T> extends StatelessWidget {
     );
   }
 
-  List<TextSpan> _buildLabelTextSpans(
-      String labelText, TextStyle labelTextStyle) {
-    final List<TextSpan> spans = <TextSpan>[];
-    final List<String> parts = labelText.split('*');
-    for (int i = 0; i < parts.length; i++) {
-      spans.add(TextSpan(text: parts[i], style: labelTextStyle));
-      if (i < parts.length - 1) {
-        spans.add(TextSpan(
-            text: '*', style: labelTextStyle.copyWith(color: Colors.red)));
-      }
-    }
-    return spans;
-  }
+  // List<TextSpan> _buildLabelTextSpans(
+  //     String labelText, TextStyle labelTextStyle) {
+  //   final List<TextSpan> spans = <TextSpan>[];
+  //   final List<String> parts = labelText.split('*');
+  //   for (int i = 0; i < parts.length; i++) {
+  //     spans.add(TextSpan(text: parts[i], style: labelTextStyle));
+  //     if (i < parts.length - 1) {
+  //       spans.add(TextSpan(
+  //           text: '*', style: labelTextStyle.copyWith(color: Colors.red)));
+  //     }
+  //   }
+  //   return spans;
+  // }
 }
 
 ///DATE PICKER WITH LABEL
@@ -557,41 +726,87 @@ class CustomRadioButton extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           Text(
             label,
             style: labelTextStyle ??
                 const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: RadioListTile<String>(
-                  value: yesOption,
-                  groupValue: value,
-                  onChanged: onChanged,
-                  title: Text(
-                    yesOption,
-                    style: optionTextStyle ??
-                        const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+          8.ph,
+          RadioGroup<String>(
+            groupValue: value,
+            // value: value,
+            onChanged: onChanged,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Row(
+                    children: <Widget>[
+                      Radio<String>(
+                        value: yesOption,
+                        // remove groupValue & onChanged!
+                      ),
+                      Text(
+                        yesOption,
+                        style: optionTextStyle ??
+                            const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              Expanded(
-                child: RadioListTile<String>(
-                  value: noOption,
-                  groupValue: value,
-                  onChanged: onChanged,
-                  title: Text(
-                    noOption,
-                    style: optionTextStyle ??
-                        const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                Expanded(
+                  child: Row(
+                    children: <Widget>[
+                      Radio<String>(
+                        value: noOption,
+                        // remove groupValue & onChanged!
+                      ),
+                      Text(
+                        noOption,
+                        style: optionTextStyle ??
+                            const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+
+          // Row(
+          //   children: <Widget>[
+          //     Expanded(
+          //       child: RadioListTile<String>(
+          //         value: yesOption,
+          //         groupValue: value,
+          //         onChanged: onChanged,
+          //         title: Text(
+          //           yesOption,
+          //           style: optionTextStyle ??
+          //               const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+          //         ),
+          //       ),
+          //     ),
+          //     Expanded(
+          //       child: RadioListTile<String>(
+          //         value: noOption,
+          //         groupValue: value,
+          //         onChanged: onChanged,
+          //         title: Text(
+          //           noOption,
+          //           style: optionTextStyle ??
+          //               const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );

@@ -19,9 +19,7 @@ class CustomShowDialog {
               // onPrimary: Colors.white, // Header text color
               // surface: Colors.white, // Background color of the date picker
               // onSurface: Colors.black, // Text color
-            ),
-            dialogBackgroundColor:
-                Colors.white, // Background color of the dialog
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.white), // Background color of the dialog
           ),
           child: child!,
         );

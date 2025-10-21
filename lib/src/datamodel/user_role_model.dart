@@ -12,10 +12,10 @@ class UserRoleModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['RoleID'] = this.roleID;
-    data['RoleCode'] = this.roleCode;
-    data['RoleName'] = this.roleName;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['RoleID'] = roleID;
+    data['RoleCode'] = roleCode;
+    data['RoleName'] = roleName;
     return data;
   }
 }

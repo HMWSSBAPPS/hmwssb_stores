@@ -1,14 +1,10 @@
 // login_provider.dart
 
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import '../../../core/network/network_index.dart';
-import '../../../datamodel/login_model.dart';
-import '../../../datamodel/userRole_model.dart';
-import '../../../../common_imports.dart';
+import 'package:hmwssb_stores/src/core/network/network_index.dart';
+import 'package:hmwssb_stores/src/datamodel/login_model.dart';
+import 'package:hmwssb_stores/src/datamodel/user_role_model.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class LoginProvider extends ChangeNotifier {
   double appVersion = 0.0;
@@ -59,7 +55,9 @@ class LoginProvider extends ChangeNotifier {
   }
 
   void safeNotifyListeners() {
-    if (!_isDisposed) notifyListeners();
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
 
   void notifyToAllValues() => safeNotifyListeners();
@@ -116,15 +114,15 @@ class LoginProvider extends ChangeNotifier {
 //   List<UserRoleModel> get roles => userRoleList;
 //   UserRoleModel? get selectedRole => selectedUserRole;
 
-  List<Map<String, String>> loginUserRolesMap = [];
-  Map<String, String> selectedRole = {};
+  List<Map<String, String>> loginUserRolesMap = <Map<String, String>>[];
+  Map<String, String> selectedRole = <String, String>{};
 
   Future<void> selectRole() async {
     loginUserRolesMap.clear();
 
-    final fullUserData = LocalStorages.getFullUserData();
-    final rolesInfo = fullUserData?.rolesInfo;
-    final savedRoleName = LocalStorages.getSelectedRoleName();
+    final MItem2? fullUserData = LocalStorages.getFullUserData();
+    final List<RolesInfo>? rolesInfo = fullUserData?.rolesInfo;
+    final String savedRoleName = LocalStorages.getSelectedRoleName();
 
     if (rolesInfo == null || rolesInfo.isEmpty) {
       printDebug("❌ No roles found in stored user data.");
@@ -132,7 +130,7 @@ class LoginProvider extends ChangeNotifier {
     }
 
     loginUserRolesMap = rolesInfo
-        .map((e) => {
+        .map((RolesInfo e) => <String, String>{
               "userID": "${e.userID}",
               "wingType": "${e.wingType}",
               "roleName": "${e.roleName}",
@@ -142,9 +140,9 @@ class LoginProvider extends ChangeNotifier {
 
     if (loginUserRolesMap.isNotEmpty) {
       // Only restore if a saved role exists
-      if (savedRoleName != null && savedRoleName.isNotEmpty) {
+      if (savedRoleName.isNotEmpty) {
         selectedRole = loginUserRolesMap.firstWhere(
-          (role) => role['roleName'] == savedRoleName,
+          (Map<String, String> role) => role['roleName'] == savedRoleName,
           orElse: () => loginUserRolesMap.first,
         );
       } else {
@@ -231,7 +229,7 @@ class LoginProvider extends ChangeNotifier {
     final HTTPResponse<dynamic> response = await ApiCalling.callApi(
       apiUrl: AppUrls.getLoginOTPExternalUrl,
       apiFunType: APITypes.post,
-      sendingData: {
+      sendingData: <String?, dynamic>{
         'mobileNo': mobileNoController.text.trim(),
         'appName': 'STORESAPP',
         'deviceID': deviceInfo["deviceID"] ?? '',
@@ -242,12 +240,12 @@ class LoginProvider extends ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      final responseBody = response.body is Map<String, dynamic>
+      final dynamic responseBody = response.body is Map<String, dynamic>
           ? response.body
           : jsonDecode(response.body);
       LoginUserModel loginUserModel = LoginUserModel.fromJson(responseBody);
-      final mItem2 = loginUserModel.mItem2;
-      final otp = mItem2?.oTP ?? '';
+      final MItem2? mItem2 = loginUserModel.mItem2;
+      final String otp = mItem2?.oTP ?? '';
 
       if (otp.isNotEmpty && otp != '0000') {
         isUserExist = true;
@@ -283,21 +281,21 @@ class LoginProvider extends ChangeNotifier {
     }
 
     final List<String> roleCodesFromLogin = loginUser.rolesInfo!
-        .map((roleInfo) => roleInfo.roleCode ?? '')
-        .where((code) => code.isNotEmpty)
+        .map((RolesInfo roleInfo) => roleInfo.roleCode ?? '')
+        .where((String code) => code.isNotEmpty)
         .toList();
 
     if (userRoleList.isEmpty) {
       await getUserRoleListApiCall();
     }
 
-    final matchedRole = userRoleList.firstWhere(
-      (role) => roleCodesFromLogin.contains(role.roleCode),
+    final UserRoleModel matchedRole = userRoleList.firstWhere(
+      (UserRoleModel role) => roleCodesFromLogin.contains(role.roleCode),
       orElse: () => UserRoleModel(),
     );
 
-    final matchedLoginRole = loginUser.rolesInfo?.firstWhere(
-      (roleInfo) => roleInfo.roleCode == matchedRole.roleCode,
+    final RolesInfo? matchedLoginRole = loginUser.rolesInfo?.firstWhere(
+      (RolesInfo roleInfo) => roleInfo.roleCode == matchedRole.roleCode,
       orElse: () => RolesInfo(),
     );
 
@@ -362,9 +360,10 @@ class LoginProvider extends ChangeNotifier {
       try {
         final List<dynamic> jsonList = response.body;
         userRoleList = jsonList
+            // ignore: always_specify_types
             .map((e) => UserRoleModel.fromJson(e as Map<String, dynamic>))
             .toList();
-      } catch (e) {
+      } on Exception catch (e) {
         printDebug("Error parsing user role list: $e");
       }
     }

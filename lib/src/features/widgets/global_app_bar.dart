@@ -1,16 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../common_imports.dart';
-import '../login/provider/login_provider.dart';
-import '../supplies/provider/supplier_provider.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/login/provider/login_provider.dart';
+import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 
 class GlobalAppBar extends StatefulWidget {
   final bool showRoleDropdown;
   final Widget body;
 
   const GlobalAppBar({
-    super.key,
-    required this.body,
+    required this.body, super.key,
     this.showRoleDropdown = true,
   });
 
@@ -76,7 +73,7 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
         backgroundColor: ThemeColors.primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Row(
-          children: [
+          children: <Widget>[
             Expanded(
               child: CustomText(
                 writtenText: Constants.appName,
@@ -86,10 +83,10 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
             if (widget.showRoleDropdown &&
                 loginProvider.loginUserRolesMap.isNotEmpty)
               Consumer<LoginProvider>(
-                builder: (context, loginProvider, _) {
-                  final selectedValue = loginProvider.selectedRole['roleName'];
-                  final roleNames = loginProvider.loginUserRolesMap
-                      .map((role) => role['roleName'] ?? '')
+                builder: (BuildContext context, LoginProvider loginProvider, _) {
+                  final String? selectedValue = loginProvider.selectedRole['roleName'];
+                  final List<String> roleNames = loginProvider.loginUserRolesMap
+                      .map((Map<String, String> role) => role['roleName'] ?? '')
                       .toSet()
                       .toList();
 
@@ -101,7 +98,7 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
                         value: roleNames.contains(selectedValue)
                             ? selectedValue
                             : null,
-                        items: roleNames.map((roleName) {
+                        items: roleNames.map((String roleName) {
                           return DropdownMenuItem<String>(
                             value: roleName,
                             child: Text(roleName,
@@ -109,15 +106,15 @@ class _GlobalAppBarState extends State<GlobalAppBar> {
                                     fontSize: 14, color: Colors.white)),
                           );
                         }).toList(),
-                        onChanged: (selectedRoleName) async {
-                          final selectedMap =
+                        onChanged: (String? selectedRoleName) async {
+                          final Map<String, String> selectedMap =
                               loginProvider.loginUserRolesMap.firstWhere(
-                            (e) => e['roleName'] == selectedRoleName,
-                            orElse: () => {},
+                            (Map<String, String> e) => e['roleName'] == selectedRoleName,
+                            orElse: () => <String, String>{},
                           );
 
-                          print('selectedMap');
-                          print(selectedMap);
+                          // print('selectedMap');
+                          // print(selectedMap);
                           await loginProvider
                               .saveSelectedRoleLocally(selectedMap);
 

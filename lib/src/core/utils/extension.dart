@@ -1,8 +1,7 @@
 
 import 'package:intl/intl.dart';
 
-import '../../../common_imports.dart';
-import '../constants/constant_text.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 //  MANIPULATE STRINGS
 extension CapExtension on String {

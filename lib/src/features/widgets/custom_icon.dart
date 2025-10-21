@@ -1,5 +1,5 @@
 
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class CustomIcon extends StatelessWidget {
   final IconData icon;

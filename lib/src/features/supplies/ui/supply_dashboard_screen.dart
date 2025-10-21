@@ -1,9 +1,12 @@
+import 'package:hmwssb_stores/src/datamodel/all_supply_details.dart';
+import 'package:hmwssb_stores/src/datamodel/login_model.dart';
+import 'package:hmwssb_stores/src/datamodel/purchase_order_list_by_supplies.dart';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:hmwssb_stores/src/features/supplies/ui/purchase_order_details_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../common_imports.dart';
-import '../../widgets/global_app_bar.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/widgets/global_app_bar.dart';
 
 class SupplyDashboardScreen extends StatefulWidget {
   final bool showFullForm;
@@ -47,7 +50,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   }
 
   void _onLoginDataChanged() {
-    final loginData = loginProvider.loggedInUserData;
+    final MItem2? loginData = loginProvider.loggedInUserData;
     if (loginData?.rolesInfo?.firstOrNull?.userID != lastUserId || loginData?.rolesInfo?.firstOrNull?.wingType != lastWingType) {
       lastUserId = loginData?.rolesInfo?.firstOrNull?.userID;
       lastWingType = loginData?.rolesInfo?.firstOrNull?.wingType;
@@ -56,16 +59,16 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   }
 
   Future<void> _tryLoadSupplierData() async {
-    final loginData = loginProvider.loggedInUserData;
+    final MItem2? loginData = loginProvider.loggedInUserData;
     if (loginData?.rolesInfo?.firstOrNull?.userID != null && loginData?.rolesInfo?.firstOrNull?.wingType != null) {
       await supplierProvider.getSupplierDetailsListApiCall(loginProvider);
-      final prefs = await SharedPreferences.getInstance();
-      final savedSupplier = prefs.getString(kSelectedSupplierKey);
-      final savedPO = prefs.getString(kSelectedPurchaseOrderKey);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? savedSupplier = prefs.getString(kSelectedSupplierKey);
+      final String? savedPO = prefs.getString(kSelectedPurchaseOrderKey);
 
       if (savedSupplier != null) {
-        final matchedSupplier = supplierProvider.supplierDetailsList.firstWhere(
-              (s) => s.agencyName == savedSupplier,
+        final AllSupplierDetailsListModel matchedSupplier = supplierProvider.supplierDetailsList.firstWhere(
+              (AllSupplierDetailsListModel s) => s.agencyName == savedSupplier,
           orElse: () => supplierProvider.supplierDetailsList.first,
         );
         selectedSupplier = matchedSupplier.agencyName;
@@ -73,8 +76,8 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
         //await supplierProvider.getPurchaseOrderListBySuppliesApiCall();
 
         if (savedPO != null) {
-          final matchedPO = supplierProvider.purchaseOrderList.firstWhere(
-                (po) => po.purchaseorderno == savedPO,
+          final PurchaseOrderListMode matchedPO = supplierProvider.purchaseOrderList.firstWhere(
+                (PurchaseOrderListMode po) => po.purchaseorderno == savedPO,
             orElse: () => supplierProvider.purchaseOrderList.first,
           );
           selectedPurchaseOrder = matchedPO.purchaseorderno;
@@ -88,7 +91,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<SupplierProvider>(
-      builder: (context, provider, _) {
+      builder: (BuildContext context, SupplierProvider provider, _) {
         // printDebug(LocalStorages.getFullUserData()!.mobileNo);
         return PopScope(
           canPop: false,
@@ -100,21 +103,23 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   // Supplier Dropdown
                   CustomDropdown<String>(
                     labelStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.supplierDetailsList
-                        .map((supplier) => supplier.agencyName ?? '')
+                        .map((AllSupplierDetailsListModel supplier) => supplier.agencyName ?? '')
                         .toList(),
-                    itemLabel: (item) => item,
+                    itemLabel: (String item) => item,
                     value: selectedSupplier,
                     hintText: 'Select Supplier',
-                    onChanged: (newValue) async {
+                    onChanged: (String? newValue) async {
                       if (newValue != null) {
-                        final prefs = await SharedPreferences.getInstance();
+                        final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-                        if (!mounted) return; // ✅ prevent setState if the widget is no longer in tree
+                        if (!mounted) {
+                          return; // ✅ prevent setState if the widget is no longer in tree
+                        }
                         setState(() {
                           selectedSupplier = newValue;
                           selectedPurchaseOrder = null;
@@ -125,7 +130,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
 
                         supplierProvider.selectedSupplierDetails = provider
                             .supplierDetailsList
-                            .firstWhere((s) => s.agencyName == newValue);
+                            .firstWhere((AllSupplierDetailsListModel s) => s.agencyName == newValue);
 
                         await provider.getPurchaseOrderListBySuppliesApiCall();
                       }
@@ -140,15 +145,15 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
                   CustomDropdown<String>(
                     labelStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.purchaseOrderList
-                        .map((order) => order.purchaseorderno ?? '')
+                        .map((PurchaseOrderListMode order) => order.purchaseorderno ?? '')
                         .toList(),
-                    itemLabel: (item) => item,
+                    itemLabel: (String item) => item,
                     value: selectedPurchaseOrder,
                     hintText: 'Select Purchase Order',
                     onChanged: selectedSupplier != null
-                        ? (newValue) async {
+                        ? (String? newValue) async {
                       if (newValue != null) {
-                        final prefs = await SharedPreferences.getInstance();
+                        final SharedPreferences prefs = await SharedPreferences.getInstance();
                         setState(() {
                           selectedPurchaseOrder = newValue;
                         });
@@ -156,7 +161,7 @@ class _SupplyDashboardScreenState extends State<SupplyDashboardScreen> {
 
                         provider.selectedPurchaseOrderListBySupplies =
                             provider.purchaseOrderList.firstWhere(
-                                    (order) => order.purchaseorderno == newValue);
+                                    (PurchaseOrderListMode order) => order.purchaseorderno == newValue);
                       }
                     }
                         : null,

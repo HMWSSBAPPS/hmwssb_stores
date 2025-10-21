@@ -1,8 +1,11 @@
+import 'package:hmwssb_stores/src/datamodel/all_supply_details.dart';
+import 'package:hmwssb_stores/src/datamodel/login_model.dart';
+import 'package:hmwssb_stores/src/datamodel/purchase_order_list_by_supplies.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
-import '../../../../../common_imports.dart';
-import '../../../login/login_index.dart';
-import '../../../widgets/global_app_bar.dart';
-import '../purchase_order_details_screen.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/features/login/login_index.dart';
+import 'package:hmwssb_stores/src/features/widgets/global_app_bar.dart';
+import 'package:hmwssb_stores/src/features/supplies/ui/purchase_order_details_screen.dart';
 
 
 class AdminScreen extends StatefulWidget {
@@ -49,7 +52,7 @@ class _AdminScreenState extends State<AdminScreen>{
   }
 
   void _onLoginDataChanged() {
-    final loginData = loginProvider.loggedInUserData;
+    final MItem2? loginData = loginProvider.loggedInUserData;
     if (loginData?.rolesInfo?.firstOrNull?.userID != lastUserId || loginData?.rolesInfo?.firstOrNull?.wingType != lastWingType) {
       lastUserId = loginData?.rolesInfo?.firstOrNull?.userID;
       lastWingType = loginData?.rolesInfo?.firstOrNull?.wingType;
@@ -59,7 +62,7 @@ class _AdminScreenState extends State<AdminScreen>{
   }
 
   Future<void> _tryLoadSupplierData() async {
-    final loginData = loginProvider.loggedInUserData;
+    final MItem2? loginData = loginProvider.loggedInUserData;
     if (loginData?.rolesInfo?.firstOrNull?.userID != null && loginData?.rolesInfo?.firstOrNull?.wingType != null) {
       await supplierProvider.getSupplierDetailsListApiCall(loginProvider);
       setState(() {}); // refresh UI if needed
@@ -84,13 +87,13 @@ class _AdminScreenState extends State<AdminScreen>{
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: <Widget>[
                   // Supplier Dropdown
                   CustomDropdown<String>(
                     labelStyle:
                     ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.supplierDetailsList
-                        .map((supplier) => supplier.agencyName ?? '')
+                        .map((AllSupplierDetailsListModel supplier) => supplier.agencyName ?? '')
                         .toList(),
                     itemLabel: (String item) => item,
                     value: selectedSupplier,
@@ -104,7 +107,7 @@ class _AdminScreenState extends State<AdminScreen>{
 
                         provider.selectedSupplierDetails =
                             provider.supplierDetailsList.firstWhere(
-                                    (s) => s.agencyName == newValue);
+                                    (AllSupplierDetailsListModel s) => s.agencyName == newValue);
 
                         await provider.getPurchaseOrderListBySuppliesApiCall();
                       }
@@ -119,7 +122,7 @@ class _AdminScreenState extends State<AdminScreen>{
                     labelStyle:
                     ThemeTextStyle.style(fontWeight: FontWeight.normal),
                     items: provider.purchaseOrderList
-                        .map((order) => order.purchaseorderno ?? '')
+                        .map((PurchaseOrderListMode order) => order.purchaseorderno ?? '')
                         .toList(),
                     itemLabel: (String item) => item,
                     value: selectedPurchaseOrder,
@@ -133,7 +136,7 @@ class _AdminScreenState extends State<AdminScreen>{
 
                         provider.selectedPurchaseOrderListBySupplies =
                             provider.purchaseOrderList.firstWhere(
-                                    (order) => order.purchaseorderno == newValue);
+                                    (PurchaseOrderListMode order) => order.purchaseorderno == newValue);
                       }
                     }
                         : null, // Disable when no supplier is selected

@@ -1,20 +1,19 @@
-
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 
-import '../../../../common_imports.dart';
-import '../../../datamodel/items_by_purchase_order_number.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
 import 'package:intl/intl.dart';
-
-
 
 class PurchaseOrderDetailsScreen extends StatefulWidget {
   const PurchaseOrderDetailsScreen({super.key});
 
   @override
-  State<PurchaseOrderDetailsScreen> createState() => _PurchaseOrderDetailsScreenState();
+  State<PurchaseOrderDetailsScreen> createState() =>
+      _PurchaseOrderDetailsScreenState();
 }
 
-class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen> {
+class _PurchaseOrderDetailsScreenState
+    extends State<PurchaseOrderDetailsScreen> {
   @override
   void initState() {
     super.initState();
@@ -30,14 +29,18 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
             return const SizedBox.shrink();
           }
 
-          final String? searchText = provider.ItemNameController.text.trim().toLowerCase();
+          final String searchText =
+              provider.itemNameController.text.trim().toLowerCase();
 
-          final List<ItemsByPurchaseOrderModel> filteredList = searchText!.isNotEmpty
-              ? provider.itemByPurchaseOrderList.where((ItemsByPurchaseOrderModel element) {
-            final String fileNumber = (element.itemName ?? '').toLowerCase();
-            return fileNumber.contains(searchText);
-          }).toList()
-              : provider.itemByPurchaseOrderList;
+          final List<ItemsByPurchaseOrderModel> filteredList =
+              searchText.isNotEmpty
+                  ? provider.itemByPurchaseOrderList
+                      .where((ItemsByPurchaseOrderModel element) {
+                      final String fileNumber =
+                          (element.itemName ?? '').toLowerCase();
+                      return fileNumber.contains(searchText);
+                    }).toList()
+                  : provider.itemByPurchaseOrderList;
 
           return Column(
             children: <Widget>[
@@ -45,42 +48,45 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomTextFormField(
-                    controller: provider.ItemNameController,
-                    focusNode: provider.ItemNameFocusNode,
+                    controller: provider.itemNameController,
+                    focusNode: provider.itemNameFocusNode,
                     labelText: 'Enter Item Name',
                     onChanged: (String val) {
                       provider.notifyToAllValues();
                     },
-                    inputFormatters: <TextInputFormatter>[LengthLimitingTextInputFormatter(30)],
+                    inputFormatters: <TextInputFormatter>[
+                      LengthLimitingTextInputFormatter(30)
+                    ],
                     suffixIcon: searchText.isEmpty
                         ? const Icon(Icons.search)
                         : IconButton(
-                      onPressed: () {
-                        provider.ItemNameController.clear();
-                        provider.notifyToAllValues();
-                      },
-                      icon: const Icon(Icons.cancel_outlined, color: ThemeColors.orangeColor),
-                    ),
+                            onPressed: () {
+                              provider.itemNameController.clear();
+                              provider.notifyToAllValues();
+                            },
+                            icon: const Icon(Icons.cancel_outlined,
+                                color: ThemeColors.orangeColor),
+                          ),
                   ),
                 ),
               Expanded(
                 child: filteredList.isEmpty
                     ? Center(
-                  child: CustomText(
-                    writtenText: Constants.noDataFound,
-                    textStyle: ThemeTextStyle.style(),
-                  ),
-                )
+                        child: CustomText(
+                          writtenText: Constants.noDataFound,
+                          textStyle: ThemeTextStyle.style(),
+                        ),
+                      )
                     : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: filteredList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return _customFileCard(
-                      context: context,
-                      data: filteredList[index],
-                    );
-                  },
-                ),
+                        shrinkWrap: true,
+                        itemCount: filteredList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return _customFileCard(
+                            context: context,
+                            data: filteredList[index],
+                          );
+                        },
+                      ),
               ),
             ],
           );
@@ -89,7 +95,9 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
     );
   }
 
-  Widget _customFileCard({required BuildContext context, required ItemsByPurchaseOrderModel data}) {
+  Widget _customFileCard(
+      {required BuildContext context,
+      required ItemsByPurchaseOrderModel data}) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
       child: InkWell(
@@ -103,17 +111,24 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
             borderRadius: BorderRadius.circular(8.0),
             border: Border.all(color: ThemeColors.primaryColor),
             boxShadow: const <BoxShadow>[
-              BoxShadow(color: ThemeColors.primaryColor, offset: Offset(0.5, 0.5)),
-              BoxShadow(color: ThemeColors.primaryColor, offset: Offset(-0.5, -0.5))
+              BoxShadow(
+                  color: ThemeColors.primaryColor, offset: Offset(0.5, 0.5)),
+              BoxShadow(
+                  color: ThemeColors.primaryColor, offset: Offset(-0.5, -0.5))
             ],
           ),
           child: Column(
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  Expanded(child: Padding(
+                  Expanded(
+                      child: Padding(
                     padding: const EdgeInsets.only(left: 8.0, top: 8.0),
-                    child: _customLabelBodyText(context: context, label: 'Agreement No.', body: data.agreementNo,),
+                    child: _customLabelBodyText(
+                      context: context,
+                      label: 'Agreement No.',
+                      body: data.agreementNo,
+                    ),
                   )),
                   // Expanded(
                   //   child: Padding(
@@ -153,7 +168,8 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                       child: CustomText(
                         writtenText: data.readyNessStatus ?? Constants.empty,
-                        textStyle: ThemeTextStyle.style(color: ThemeColors.whiteColor),
+                        textStyle:
+                            ThemeTextStyle.style(color: ThemeColors.whiteColor),
                       ),
                     ),
                   ),
@@ -164,19 +180,38 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
                 child: Column(
                   children: <Widget>[
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Agreement Date', body: _formatDate(data.agreementDate)),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'Agreement Date',
+                        body: _formatDate(data.agreementDate)),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Item Name', body: data.itemName ?? Constants.empty),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'Item Name',
+                        body: data.itemName ?? Constants.empty),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Proposed Qty for Inspection', body: data.quantity.toString()),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'Proposed Qty for Inspection',
+                        body: data.quantity.toString()),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Unit', body: data.units),
+                    _customLabelBodyText(
+                        context: context, label: 'Unit', body: data.units),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Unit Rate', body: data.unitsRate.toString()),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'Unit Rate',
+                        body: data.unitsRate.toString()),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'Qty to Inspect', body: data.quantitytoInspect.toString()),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'Qty to Inspect',
+                        body: data.quantitytoInspect.toString()),
                     8.ph,
-                    _customLabelBodyText(context: context, label: 'SLA Date', body: _formatDate(data.slaDate)),
+                    _customLabelBodyText(
+                        context: context,
+                        label: 'SLA Date',
+                        body: _formatDate(data.slaDate)),
                   ],
                 ),
               ),
@@ -187,7 +222,10 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
     );
   }
 
-  Widget _customLabelBodyText({required BuildContext context, required String label, required String? body}) {
+  Widget _customLabelBodyText(
+      {required BuildContext context,
+      required String label,
+      required String? body}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -195,7 +233,6 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
           child: CustomText(
             writtenText: label,
             textStyle: ThemeTextStyle.style(fontWeight: FontWeight.normal),
-
           ),
         ),
         CustomText(
@@ -218,12 +255,13 @@ class _PurchaseOrderDetailsScreenState extends State<PurchaseOrderDetailsScreen>
 }
 
 String _formatDate(String? date) {
-  if (date == null || date.isEmpty) return Constants.hypenSymbol;
+  if (date == null || date.isEmpty) {
+    return Constants.hypenSymbol;
+  }
   try {
     final DateTime parsedDate = DateTime.parse(date);
     return DateFormat('dd-MM-yyyy').format(parsedDate);
-  } catch (e) {
+  } on Exception catch (_) {
     return Constants.hypenSymbol;
   }
 }
-

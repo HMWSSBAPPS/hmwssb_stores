@@ -1,21 +1,21 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-// 
+//
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../common_imports.dart';
+import 'package:hmwssb_stores/common_imports.dart';
 
 class Utils {
-  static Map<String, String> deviceInfo = {};
+  static Map<String, String> deviceInfo = <String, String>{};
   static Position? currentPosition;
   static DateTime get currentDateTime => DateTime.now();
   static TimeOfDay get currentTime => TimeOfDay.now();
   static final DateFormat dmyDateFrmt = DateFormat('dd-MM-yyyy');
   static final DateFormat ymdDateFrmtWithTime =
-  DateFormat('yyyy-MM-dd HH:mm:ss');
+      DateFormat('yyyy-MM-dd HH:mm:ss');
   static final DateFormat ymdDateFrmt = DateFormat('yyyy-MM-dd');
   static final DateFormat dMonthNameYDateFrmt = DateFormat('dd-MMM-yyyy');
 
@@ -56,37 +56,35 @@ class Utils {
     }
   }
 
-
-
   /// Fetch device information
   static Future<void> fetchDeviceInfo() async {
     final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     try {
       if (Platform.isAndroid) {
-        final AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
-        deviceInfo = {
-          'device': androidInfo.model ?? 'Unknown',
-          'brand': androidInfo.brand ?? 'Unknown',
-          'manufacturer': androidInfo.manufacturer ?? 'Unknown',
+        final AndroidDeviceInfo androidInfo =
+            await deviceInfoPlugin.androidInfo;
+        deviceInfo = <String, String>{
+          'device': androidInfo.model,
+          'brand': androidInfo.brand,
+          'manufacturer': androidInfo.manufacturer,
           'osVersion': 'Android ${androidInfo.version.release}',
           'sdkInt': '${androidInfo.version.sdkInt}', // SDK version
-          'hardware': androidInfo.hardware ?? 'Unknown',
-          'deviceID': androidInfo.id ?? 'Unknown',
+          'hardware': androidInfo.hardware,
+          'deviceID': androidInfo.id,
           'isPhysicalDevice': androidInfo.isPhysicalDevice ? 'Yes' : 'No',
-
         };
       } else if (Platform.isIOS) {
         final IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
-        deviceInfo = {
-          'device': iosInfo.utsname.machine ?? 'Unknown',
-          'systemName': iosInfo.systemName ?? 'iOS',
-          'osVersion': iosInfo.systemVersion ?? 'Unknown',
-          'model': iosInfo.model ?? 'Unknown',
+        deviceInfo = <String, String>{
+          'device': iosInfo.utsname.machine,
+          'systemName': iosInfo.systemName,
+          'osVersion': iosInfo.systemVersion,
+          'model': iosInfo.model,
           'deviceID': iosInfo.identifierForVendor ?? 'Unknown',
           'isPhysicalDevice': iosInfo.isPhysicalDevice ? 'Yes' : 'No',
         };
       }
-    } catch (e) {
+    } on Exception catch (e) {
       EasyLoading.showError('Failed to fetch device info: $e');
     }
   }
@@ -121,7 +119,6 @@ class Utils {
   //   }
   // }
 
-
   static Future<dynamic> openCamera({bool getBase64 = true}) async {
     try {
       // await Permission.camera.request();
@@ -149,7 +146,6 @@ class Utils {
       return null;
     }
   }
-
 
   static Future<void> callLocApi() async {
     // Then, check for location permissions

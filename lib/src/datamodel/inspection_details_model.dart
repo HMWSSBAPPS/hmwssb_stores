@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, avoid_dynamic_calls
+
 class InspectionDetailsModel {
   MItem1? mItem1;
   List<MItem2>? mItem2;
@@ -16,10 +18,16 @@ class InspectionDetailsModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    if (mItem1 != null) data['m_Item1'] = mItem1!.toJson();
-    if (mItem2 != null) data['m_Item2'] = mItem2!.map((v) => v.toJson()).toList();
-    if (mItem3 != null) data['m_Item3'] = mItem3!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (mItem1 != null) {
+      data['m_Item1'] = mItem1!.toJson();
+    }
+    if (mItem2 != null) {
+      data['m_Item2'] = mItem2!.map((MItem2 v) => v.toJson()).toList();
+    }
+    if (mItem3 != null) {
+      data['m_Item3'] = mItem3!.map((MItem2 v) => v.toJson()).toList();
+    }
     return data;
   }
 }
@@ -37,7 +45,7 @@ class MItem1 {
     description = json['Description'];
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
     'ResponseCode': responseCode,
     'ResponseType': responseType,
     'Description': description,
@@ -116,7 +124,7 @@ class MItem2 {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['PKey'] = pKey;
     data['PurchaseOrderID'] = purchaseOrderID;
     data['PurchaseOrderLineItemID'] = purchaseOrderLineItemID;
@@ -137,7 +145,7 @@ class MItem2 {
     data['RefPKey'] = refPKey;
     data['QCApprovedQuantity'] = qCApprovedQuantity;
     if (qCInspectionImages != null) {
-      data['QCInspectionImages'] = qCInspectionImages!.map((v) => v.toJson()).toList();
+      data['QCInspectionImages'] = qCInspectionImages!.map((QCInspectionImages v) => v.toJson()).toList();
     }
     return data;
   }
@@ -175,7 +183,7 @@ class QCInspectionImages {
     createdDate = json['CreatedDate'];
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => <String, dynamic>{
     'PKey': pKey,
     'RefPkey': refPkey,
     'ImagePath': imagePath,

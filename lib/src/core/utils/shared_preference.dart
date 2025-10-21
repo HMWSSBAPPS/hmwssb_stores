@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../common_imports.dart';
-import '../../datamodel/login_model.dart';
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/login_model.dart';
 
 enum LocalSaveType {
   isLoggedIn,
@@ -26,6 +25,7 @@ class LocalStorages {
 
   static dynamic saveUserData({
     required LocalSaveType localSaveType,
+    // ignore: avoid_annotating_with_dynamic
     required dynamic value,
   }) {
     dynamic val = value ?? (localSaveType == LocalSaveType.isLoggedIn ? false : '');
@@ -75,11 +75,13 @@ class LocalStorages {
   static String? getFullUserDataRaw() => _prefs?.getString(ShareKey.fullUserData);
 
   static MItem2? getFullUserData() {
-    final raw = getFullUserDataRaw();
-    if (raw == null || raw.isEmpty) return null;
+    final String? raw = getFullUserDataRaw();
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
     try {
       return MItem2.fromJson(jsonDecode(raw));
-    } catch (e) {
+    } on Exception catch (e) {
       log("Error decoding fullUserData: $e");
       return null;
     }

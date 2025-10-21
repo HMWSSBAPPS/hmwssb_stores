@@ -1,27 +1,24 @@
 import 'dart:io';
+import 'package:hmwssb_stores/src/datamodel/inspection_details_model.dart';
 import 'package:hmwssb_stores/src/features/login/login_index.dart';
 import 'package:hmwssb_stores/src/features/supplies/provider/supplier_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import '../../../../../common_imports.dart';
-import '../../../../datamodel/inspection_details_model.dart';
-import '../../../../datamodel/items_by_purchase_order_number.dart';
-import '../../../../datamodel/purchase_order_list_by_supplies.dart';
-import '../../../../datamodel/save_imsqc_inspection_details.dart';
-import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart' as submit;
+import 'package:hmwssb_stores/common_imports.dart';
+import 'package:hmwssb_stores/src/datamodel/items_by_purchase_order_number.dart';
+import 'package:hmwssb_stores/src/datamodel/purchase_order_list_by_supplies.dart';
+import 'package:hmwssb_stores/src/datamodel/save_imsqc_inspection_details.dart';
 
-
-
-class QcGmSubmitScreen extends StatefulWidget {
-  const QcGmSubmitScreen({required this.data, super.key});
+class StoreDgmSubmitScreen extends StatefulWidget {
+  const StoreDgmSubmitScreen({required this.data, super.key});
   final ItemsByPurchaseOrderModel data;
 
   @override
-  _QcGmSubmitScreenState createState() => _QcGmSubmitScreenState();
+  StoreDgmSubmitScreenState createState() => StoreDgmSubmitScreenState();
 }
 
-class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
+class StoreDgmSubmitScreenState extends State<StoreDgmSubmitScreen> {
   late SupplierProvider supplierProvider;
   late LoginProvider loginProvider;
   TextEditingController itemMakeController = TextEditingController();
@@ -39,7 +36,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
   String? selectedApprovalStatus;
   String? uploadedFileName;
   String? uploadedFileBase64;
-  List<XFile> selectedImages = [];
+  List<XFile> selectedImages = <XFile>[];
   int? _currentImageIndex;
 
   @override
@@ -50,62 +47,46 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     Utils.callLocApi();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final selectedItem = widget.data;
+      final ItemsByPurchaseOrderModel selectedItem = widget.data;
 
-      final pkey = selectedItem.pkey?.toString().trim();
+      final String? pkey = selectedItem.pkey?.toString().trim();
       if (pkey != null && pkey.isNotEmpty) {
-        supplierProvider.selectedPurchaseOrderListBySupplies = PurchaseOrderListMode(
+        supplierProvider.selectedPurchaseOrderListBySupplies =
+            PurchaseOrderListMode(
           pkey: selectedItem.pkey,
           purchaseorderno: selectedItem.purchaseOrderNo,
         );
       }
 
       slaForQcController.text = selectedItem.slaDate != null
-          ? DateFormat('dd-MM-yyyy').format(DateTime.parse(selectedItem.slaDate!))
+          ? DateFormat('dd-MM-yyyy')
+              .format(DateTime.parse(selectedItem.slaDate!))
           : '';
 
       proposedQuantityController.text = selectedItem.quantity?.toString() ?? '';
-      quantityToInspectController.text = selectedItem.quantitytoInspect?.toString() ?? '';
+      quantityToInspectController.text =
+          selectedItem.quantitytoInspect?.toString() ?? '';
 
       await supplierProvider.getTpInspectionDetailsApiCall(loginProvider);
     });
   }
 
-
-
-
   Future<void> _submitForm() async {
-    DateTime? inspectionDate;
-    DateTime? manufactureDate;
+    printDebug("Final Manufacture Date Sent: $selectedYearOfManufacturerAPI");
 
-    if (selectedDateOfQCInspectionAPI != null && selectedDateOfQCInspectionAPI!.isNotEmpty) {
-      inspectionDate = DateTime.tryParse(selectedDateOfQCInspectionAPI!);
-      if (inspectionDate == null) {
-        EasyLoading.showError('Invalid QC Inspection Date.');
-        return;
-      }
-    }
+    // if (selectedYearOfManufacturerAPI == null || selectedYearOfManufacturerAPI!.isEmpty) {
+    //   EasyLoading.showError('Manufacture Date is mandatory');
+    //   return;
+    // }
 
-    if (selectedYearOfManufacturerAPI != null && selectedYearOfManufacturerAPI!.isNotEmpty) {
-      manufactureDate = DateTime.tryParse(selectedYearOfManufacturerAPI!);
-      if (manufactureDate == null) {
-        EasyLoading.showError('Invalid Manufacturing Date.');
-        return;
-      }
-
-      if (inspectionDate != null && inspectionDate.isBefore(manufactureDate)) {
-        EasyLoading.showError('QC Inspection Date should be greater than or equal to the Manufacturing Date.');
-        return;
-      }
-    }
-
-    if (selectedApprovalStatus == "Rejected" && inspectionRemarksController.text.trim().isEmpty) {
+    if (selectedApprovalStatus == "Rejected" &&
+        inspectionRemarksController.text.trim().isEmpty) {
       EasyLoading.showError('Inspection Remarks are required for rejected QC.');
       return;
     }
 
-    List<submit.QCInspectionImages> imagesList = selectedImages.map((image) {
-      return submit.QCInspectionImages(
+    List<SaveQCInspectionImages> imagesList = selectedImages.map((XFile image) {
+      return SaveQCInspectionImages(
         appName: "STORESAPP",
         imageType: selectedImages.indexOf(image) + 1,
         imageName: image.name,
@@ -114,14 +95,14 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
         base64Image: base64Encode(File(image.path).readAsBytesSync()),
       );
     }).toList();
-
-
-    final double? approvedQuantity = double.tryParse(approvedQuantityController.text.trim());
-    final double? quantity = widget.data.quantity?.toDouble();
-
+    final String approvedQtyText = approvedQuantityController.text.trim();
+    final double? approvedQuantity = double.tryParse(approvedQtyText);
+    final double? quantity =
+        widget.data.quantity?.toDouble(); // ✅ Instead of provider
     final String wingType = LocalStorages.getWingId();
     SaveIMSQCInspectionDetailsModel postData = SaveIMSQCInspectionDetailsModel(
-      purchaseOrderID: supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
+      purchaseOrderID:
+          supplierProvider.selectedPurchaseOrderListBySupplies?.pkey,
       purchaseOrderLineItemID: widget.data.lineItemPKey,
       quantity: quantity,
       qCApprovedQuantity: approvedQuantity,
@@ -143,13 +124,18 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       uploadDocBase64: uploadedFileBase64 ?? '',
       qCInspectionImages: imagesList,
     );
+    printDebug(
+        'Encoded base64 starts with: ${uploadedFileBase64?.substring(0, 30)}');
 
-    await supplierProvider.postIMSQInspectDetailsApiCall(postData, supplierProvider);
+    printDebug("Submitted Data: ${postData.toJson()}");
+    await supplierProvider.postIMSQInspectDetailsApiCall(
+        postData, supplierProvider);
   }
 
+  // Image picker, calendar selection, etc., remain the same
   Future<void> _captureImage() async {
     if (selectedImages.length < 5) {
-      final image = await Utils.openCamera(getBase64: false);
+      final dynamic image = await Utils.openCamera(getBase64: false);
       if (image != null && image is XFile) {
         setState(() {
           selectedImages.add(image);
@@ -166,6 +152,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     });
   }
 
+  // Show full-screen zoomable image
   void _openFullScreenImage(int index) {
     setState(() {
       _currentImageIndex = index;
@@ -173,12 +160,12 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: PhotoViewGallery.builder(
             itemCount: selectedImages.length,
-            builder: (context, index) {
+            builder: (BuildContext context, int index) {
               return PhotoViewGalleryPageOptions(
                 imageProvider: FileImage(File(selectedImages[index].path)),
                 minScale: PhotoViewComputedScale.contained,
@@ -186,8 +173,11 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
               );
             },
             scrollPhysics: BouncingScrollPhysics(),
-            backgroundDecoration: BoxDecoration(color: Colors.black),
-            pageController: PageController(initialPage: _currentImageIndex ?? 0),
+            backgroundDecoration: BoxDecoration(
+              color: Colors.black,
+            ),
+            pageController:
+                PageController(initialPage: _currentImageIndex ?? 0),
             onPageChanged: (int index) {
               setState(() {
                 _currentImageIndex = index;
@@ -210,7 +200,7 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
             padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 CustomDropdown<String>(
                   labelStyle: ThemeTextStyle.style(),
                   items: const <String>['Select', 'Approved', 'Rejected'],
@@ -225,20 +215,30 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                CustomText(writtenText: "Inspection Remarks", textStyle: ThemeTextStyle.style()),
+                CustomText(
+                    writtenText: "Inspection Remarks",
+                    textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
-                CustomTextFormField(controller: inspectionRemarksController, focusNode: FocusNode()),
+                CustomTextFormField(
+                    controller: inspectionRemarksController,
+                    focusNode: FocusNode()),
                 const SizedBox(height: 20),
 
                 // Upload & Save
-                CustomText(writtenText: "Upload QC Reports and Photos", textStyle: ThemeTextStyle.style()),
+                CustomText(
+                    writtenText: "Upload QC Reports and Photos",
+                    textStyle: ThemeTextStyle.style()),
                 const SizedBox(height: 10),
                 GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                  itemCount: selectedImages.length + (selectedImages.length < 5 ? 1 : 0),
-                  itemBuilder: (context, index) {
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10),
+                  itemCount: selectedImages.length +
+                      (selectedImages.length < 5 ? 1 : 0),
+                  itemBuilder: (BuildContext context, int index) {
                     if (index == selectedImages.length) {
                       return GestureDetector(
                         onTap: _captureImage,
@@ -247,18 +247,20 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
                             border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.add_a_photo, size: 40, color: Colors.blue),
+                          child: const Icon(Icons.add_a_photo,
+                              size: 40, color: Colors.blue),
                         ),
                       );
                     }
                     return GestureDetector(
                       onTap: () => _openFullScreenImage(index),
                       child: Stack(
-                        children: [
+                        children: <Widget>[
                           Container(
                             decoration: BoxDecoration(
                               image: DecorationImage(
-                                image: FileImage(File(selectedImages[index].path)),
+                                image:
+                                    FileImage(File(selectedImages[index].path)),
                                 fit: BoxFit.cover,
                               ),
                               borderRadius: BorderRadius.circular(8),
@@ -270,7 +272,8 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
                             right: 5,
                             child: GestureDetector(
                               onTap: () => _removeImage(index),
-                              child: Icon(Icons.remove_circle, color: Colors.red, size: 24),
+                              child: Icon(Icons.remove_circle,
+                                  color: Colors.red, size: 24),
                             ),
                           ),
                         ],
@@ -302,13 +305,14 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
       ),
     );
   }
+
   Widget _buildRow(String label, String value) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(value),
@@ -318,12 +322,13 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     );
   }
 
-  Widget _buildDoubleRow(String label1, String value1, String label2, String value2) {
+  Widget _buildDoubleRow(
+      String label1, String value1, String label2, String value2) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           _buildRow(label1, value1),
           _buildRow(label2, value2),
         ],
@@ -331,58 +336,122 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     );
   }
 
-
   Widget buildMergedDetailsCard() {
-    final data = widget.data;
-    final int? lineItemRefPkey = data.refPkey;
+    final ItemsByPurchaseOrderModel data = widget.data;
+    // print("Line Item RefPkey: ${data.refPkey}");
+    // print(
+    //     "Inspection Records Total: ${supplierProvider.inspectionDetailRecords.length}");
+    // for (final MItem2 r in supplierProvider.inspectionDetailRecords) {
+    //   print(
+    //       "Inspection RefPKey: ${r.refPKey}, PO Line Item ID: ${r.purchaseOrderLineItemID}");
+    // }
 
-    // Filter MItem2 (Third Party Inspection) by RefPKey
-    final mItem2Recs = supplierProvider.inspectionDetailRecords
-        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
+    // Filter inspection records
+    final List<MItem2> recs = supplierProvider.inspectionDetailRecords
+        .where((MItem2 r) =>
+            r.refPKey != null &&
+            data.refPkey != null &&
+            r.refPKey == data.refPkey)
         .toList();
-
-    // Filter MItem3 (Stores Inspection) by RefPKey
-    final mItem3Recs = supplierProvider.inspectionDetailRecordsAdditional
-        .where((r) => r.refPKey != null && r.refPKey == lineItemRefPkey)
-        .toList();
-
-    final record = mItem2Recs.isNotEmpty ? mItem2Recs.first : null;
-    final additionalRecord = mItem3Recs.isNotEmpty ? mItem3Recs.first : null;
-
     return Card(
       margin: const EdgeInsets.all(12),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Purchase Order Details', style: Theme.of(context).textTheme.titleLarge),
+          children: <Widget>[
+            Text('Purchase Order Details',
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
-            _buildDoubleRow('Agreement No', data.agreementNo ?? '-', 'Agreement Date', _formatDate(data.agreementDate)),
-            _buildDoubleRow('Item Name', data.itemName ?? '-', 'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
-            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate', data.unitsRate?.toString() ?? '-'),
-            _buildDoubleRow('Quantity to Inspect', '${data.quantitytoInspect ?? '-'}', 'SLA Date', _formatDate(data.slaDate)),
-            _buildDoubleRow('Readiness Status', data.readyNessStatus ?? '-', '', ''),
+            _buildDoubleRow('Agreement No', data.agreementNo ?? '-',
+                'Agreement Date', _formatDate(data.agreementDate)),
+            _buildDoubleRow('Item Name', data.itemName ?? '-',
+                'Proposed Quantity For Inspection', '${data.quantity ?? '-'}'),
+            _buildDoubleRow('Units', data.units ?? '-', 'Units Rate',
+                data.unitsRate?.toString() ?? '-'),
+            _buildDoubleRow(
+                'Quantity to Inspect',
+                '${data.quantitytoInspect ?? '-'}',
+                'SLA Date',
+                _formatDate(data.slaDate)),
+            _buildDoubleRow(
+                'Readiness Status', data.readyNessStatus ?? '-', '', ''),
             const SizedBox(height: 20),
-
-            /// THIRD PARTY INSPECTION
-            if (record != null) ...[
-              Text('Third Party Inspection Details', style: Theme.of(context).textTheme.titleLarge),
+            if (recs.isNotEmpty) ...<Widget>[
+              Text('Third Party Inspection Details',
+                  style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 10),
-              _buildInspectionSection(record),
-            ] else ...[
-              const Text('No Third Party Inspection Details available', style: TextStyle(color: Colors.grey)),
-            ],
-
-            const SizedBox(height: 20),
-
-            /// STORES INSPECTION
-            if (additionalRecord != null) ...[
-              Text('Stores Data Inspection Details', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 10),
-              _buildStoresInspectionSection(additionalRecord),
-            ] else ...[
-              const Text('No Stores Data Inspection Details available', style: TextStyle(color: Colors.grey)),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: recs.length,
+                separatorBuilder: (_, __) => const Divider(),
+                itemBuilder: (BuildContext ctx, int index) {
+                  final MItem2 record = recs[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _buildDoubleRow('Item Make', record.itemMake ?? '-',
+                          'Batch No', record.batchNo ?? '-'),
+                      _buildDoubleRow(
+                          'Readiness Status',
+                          record.gmReadiness ?? '-',
+                          'Manufacture Date',
+                          _formatDate(record.manufactureDate)),
+                      _buildDoubleRow(
+                          'Inspection Date',
+                          _formatDate(record.inspectionDate),
+                          'Remarks',
+                          record.inspectionRemarks ?? '-'),
+                      _buildDoubleRow(
+                          'Status',
+                          record.qCStatus ?? '-',
+                          'Approved Quantity',
+                          record.qCApprovedQuantity?.toString() ?? '-'),
+                      _buildDoubleRow(
+                          'Quantity to Inspect',
+                          record.quantityToInspect?.toString() ?? '-',
+                          'Unit Type',
+                          record.unitType ?? '-'),
+                      _buildDoubleRow('HSM No', record.hSMNo ?? '-', '', ''),
+                      if (record.qCInspectionImages?.isNotEmpty ??
+                          false) ...<Widget>[
+                        const SizedBox(height: 10),
+                        const Text('Inspection Images:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          height: 100,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: record.qCInspectionImages!.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (BuildContext ctx, int i) {
+                              final QCInspectionImages img =
+                                  record.qCInspectionImages![i];
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  img.imagePath ?? '',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.broken_image),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+            ] else ...<Widget>[
+              const Text('No inspection data available for this line item',
+                  style: TextStyle(color: Colors.grey)),
             ],
           ],
         ),
@@ -390,101 +459,13 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
     );
   }
 
-
-
-  Widget _buildInspectionSection(MItem2 record) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDoubleRow('Item Make', record.itemMake ?? '-', 'Batch No', record.batchNo ?? '-'),
-        _buildDoubleRow('Readiness Status', record.gmReadiness ?? '-', 'Manufacture Date', _formatDate(record.manufactureDate)),
-        _buildDoubleRow('Inspection Date', _formatDate(record.inspectionDate), 'Remarks', record.inspectionRemarks ?? '-'),
-        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Approved Quantity', record.qCApprovedQuantity?.toString() ?? '-'),
-        _buildDoubleRow('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-', 'Unit Type', record.unitType ?? '-'),
-        _buildDoubleRow('HSM No', record.hSMNo ?? '-', '', ''),
-        if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
-          const SizedBox(height: 10),
-          const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: record.qCInspectionImages!.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final img = record.qCInspectionImages![i];
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    img.imagePath ?? '',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                  ),
-                );
-              },
-            ),
-          ),
-        ]
-      ],
-    );
-  }
-  Widget _buildStoresInspectionSection(MItem2 record) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDoubleRow('Status', record.qCStatus ?? '-', 'Remarks', record.inspectionRemarks ??  '-'),
-        //_buildRow1('Quantity to Inspect', record.quantityToInspect?.toString() ?? '-'),
-        if (record.qCInspectionImages?.isNotEmpty ?? false) ...[
-          const SizedBox(height: 10),
-          const Text('Inspection Images:', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: record.qCInspectionImages!.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final img = record.qCInspectionImages![i];
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    img.imagePath ?? '',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                  ),
-                );
-              },
-            ),
-          ),
-        ]
-      ],
-    );
-  }
-  Widget _buildRow1(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,   // ✅ THIS IS IMPORTANT
-        children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Flexible(
-            child: Text(value),
-          ),
-        ],
-      ),
-    );
-  }
   String _formatDate(String? rawDate) {
-    if (rawDate == null || rawDate.isEmpty) return "-";
+    if (rawDate == null || rawDate.isEmpty) {
+      return "-";
+    }
     try {
       return DateFormat('dd-MM-yyyy').format(DateTime.parse(rawDate));
-    } catch (_) {
+    } on Exception catch (_) {
       return rawDate;
     }
   }
@@ -508,5 +489,4 @@ class _QcGmSubmitScreenState extends State<QcGmSubmitScreen> {
 
     return true;
   }
-
 }

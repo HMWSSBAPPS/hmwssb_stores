@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, avoid_dynamic_calls
+
 class LoginUserModel {
   MItem1? mItem1;
   MItem2? mItem2;
@@ -6,18 +8,18 @@ class LoginUserModel {
 
   LoginUserModel.fromJson(Map<String, dynamic> json) {
     mItem1 =
-    json['m_Item1'] != null ? new MItem1.fromJson(json['m_Item1']) : null;
+    json['m_Item1'] != null ? MItem1.fromJson(json['m_Item1']) : null;
     mItem2 =
-    json['m_Item2'] != null ? new MItem2.fromJson(json['m_Item2']) : null;
+    json['m_Item2'] != null ? MItem2.fromJson(json['m_Item2']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.mItem1 != null) {
-      data['m_Item1'] = this.mItem1!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (mItem1 != null) {
+      data['m_Item1'] = mItem1!.toJson();
     }
-    if (this.mItem2 != null) {
-      data['m_Item2'] = this.mItem2!.toJson();
+    if (mItem2 != null) {
+      data['m_Item2'] = mItem2!.toJson();
     }
     return data;
   }
@@ -37,10 +39,10 @@ class MItem1 {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['ResponseCode'] = this.responseCode;
-    data['ResponseType'] = this.responseType;
-    data['Description'] = this.description;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['ResponseCode'] = responseCode;
+    data['ResponseType'] = responseType;
+    data['Description'] = description;
     return data;
   }
 }
@@ -67,19 +69,19 @@ class MItem2 {
     if (json['RolesInfo'] != null) {
       rolesInfo = <RolesInfo>[];
       json['RolesInfo'].forEach((v) {
-        rolesInfo!.add(new RolesInfo.fromJson(v));
+        rolesInfo!.add(RolesInfo.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['UserName'] = this.userName;
-    data['OTP'] = this.oTP;
-    data['AgencyName'] = this.agencyName;
-    data['MobileNo'] = this.mobileNo;
-    if (this.rolesInfo != null) {
-      data['RolesInfo'] = this.rolesInfo!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['UserName'] = userName;
+    data['OTP'] = oTP;
+    data['AgencyName'] = agencyName;
+    data['MobileNo'] = mobileNo;
+    if (rolesInfo != null) {
+      data['RolesInfo'] = rolesInfo!.map((RolesInfo v) => v.toJson()).toList();
     }
     return data;
   }
@@ -101,11 +103,11 @@ class RolesInfo {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['UserID'] = this.userID;
-    data['RoleCode'] = this.roleCode;
-    data['RoleName'] = this.roleName;
-    data['WingType'] = this.wingType;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['UserID'] = userID;
+    data['RoleCode'] = roleCode;
+    data['RoleName'] = roleName;
+    data['WingType'] = wingType;
     return data;
   }
 }
